@@ -1,15 +1,15 @@
 const mongoose = require("mongoose")
 
-const QDSSchema = new mongoose.Schema(
+const Book_Rules_Schema = new mongoose.Schema(
     {
-        DSTheLoai: [
+        genres: [
             {
-                TenTheLoai:{
+                title:{
                     type: String
                 }
             }
         ],
-        KhoangCachXuatBan:{
+        Publishing_distance:{
             type: Number
         }
     },
@@ -18,4 +18,4 @@ const QDSSchema = new mongoose.Schema(
     }
 )
 
-module.exports = mongoose.model("QuyDinhSach", QDSSchema)
+module.exports = mongoose.model("Book_Rules", Book_Rules_Schema)

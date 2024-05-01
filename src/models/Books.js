@@ -1,51 +1,45 @@
 const mongoose = require("mongoose")
 const TacGia = require("./TacGia")
-const QuyDinhSach = require("./QuyDinhSach")
+const QuyDinhSach = require("./Book_Rules")
 
-const calculateDateFromAge = (age) => {
-    const date = new Date();
-    date.setFullYear(date.getFullYear() - age);
-    return date;
-};
-
-const SachSchema = new mongoose.Schema(
+const BookSchema = new mongoose.Schema(
     {
-        MaSach:{
+        BookID:{
             type: String,
             required: true,
             unique: true
         },
-        TenSach:{
+        title:{
             type: String,
             required: true
         },
-        TheLoaiSach:{
+        genre:{
             type: String,
             required: true,
-            enum: ["A", "B", "C"],
         },
         TacGia:[{
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'TacGia',
+            ref: 'Author',
         }],
-        NamXuatBan:{
+        publishYear:{
             type: Number,
             required: true,
             min: calculateDateFromAge(8)
         },
-        NhaXuatBan:{
+        publisher:{
             type: String,
             required: true
         },
-        NgayNhap:{
+        dateofentry:{
             type: Date,
             required: true
         },
-        TinhTrang:{
+        condition:{
             type: String,
-            enum: ["Còn Trống", "Đã mượn", "Mất"]
+            enum: ["Còn Trống", "Đã mượn", "Mất"],
+            default: "Còn Trống"
         },
-        Gia:{
+        price:{
             type:Number,
             reuiqred: true
         }

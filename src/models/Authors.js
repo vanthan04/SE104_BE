@@ -1,8 +1,8 @@
 const mongoose = require("mongoose")
 
-const TacGiaSchema = new mongoose.Schema(
+const AuthorSchema = new mongoose.Schema(
     {
-        TenTacGia:{
+        authorName:{
             type: String
         }
     },
@@ -12,9 +12,9 @@ const TacGiaSchema = new mongoose.Schema(
 )
 
 TacGiaSchema.methods = {
-    KiemTraSoLuongTacGia: async function(){
+    CheckTheNumberOfAuthors: async function(){
         try {
-            await TacGiaSchema.distinct('TenTacGia', (err, uniqueNames) => {
+            await TacGiaSchema.distinct('authorName', (err, uniqueNames) => {
                 if (err) {
                     console.error(err);
                     return;
@@ -29,4 +29,4 @@ TacGiaSchema.methods = {
     }
 }
 
-module.exports = mongoose.model("TacGia", TacGiaSchema)
+module.exports = mongoose.model("Author", AuthorSchema)

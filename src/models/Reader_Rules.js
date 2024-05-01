@@ -1,14 +1,14 @@
 const mongoose = require("mongoose")
 
-const QDDGSchema = new mongoose.Schema(
+const Reader_Rules_Schema = new mongoose.Schema(
     {
-        TuoiToiThieu:{
+        minAge:{
             type: Number,
         },
-        TuoiToiDa:{
+        maxAge:{
             type: Number
         },
-        GiaTriThe:{
+        cardValue:{
             type: Number
         }
     },
@@ -17,4 +17,4 @@ const QDDGSchema = new mongoose.Schema(
     }
 )
 
-module.exports = mongoose.model("QuyDinhDocGia", QDDGSchema)
+module.exports = mongoose.model("Reader_Rules", Reader_Rules_Schema)

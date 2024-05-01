@@ -33,4 +33,4 @@ accountSchema.methods = {
         return await bcrypt.compare(password, this.password);
     }
 }
-module.exports = mongoose.model("Account", accountSchema);
+module.exports = mongoose.model("AccountAdmin", accountSchema);
