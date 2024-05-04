@@ -1,5 +1,5 @@
 const mongoose = require("mongoose")
-const Book_Borrow_Schema = new mongoose.Schema(
+const Book_Borrow_Return_Schema = new mongoose.Schema(
     {
         ReaderInfor:{
             type: mongoose.Schema.Types.ObjectId,
@@ -11,10 +11,12 @@ const Book_Borrow_Schema = new mongoose.Schema(
                     type: mongoose.Schema.Types.ObjectId,
                     ref: 'Books'
                 },
-                dateofBorrowing: {
+                dateofBorrow: {
                     type: Date
                 },
-                timestamps: true
+                dateofReturn:{
+                    type: Date
+                }
             }
         ]
 
@@ -24,4 +26,4 @@ const Book_Borrow_Schema = new mongoose.Schema(
     }
 )
 
-module.exports = mongoose.model("Book_Borrow", Book_Borrow_Schema)
+module.exports = mongoose.model("Book_Borrow_Return", Book_Borrow_Return_Schema)

@@ -1,14 +1,16 @@
 const localStrategy = require("passport-local").Strategy;
-const AccountAdmin = require("../models/accountAdmin");
+const AccountAdmins = require("../models/accountAdmin")
+const passport = require("passport")
 
 const initializePassport = (passport) => {
     passport.use('local-admin', new localStrategy(
         { usernameField: 'username' },
-        async function (username, password, done) {
+        async (username, password, done) => {
             try {
-                const user = await AccountAdmin.findOne({ username: username });
+                const user = await AccountAdmins.findOne({ username: username });
                 if (!user)
                     return done(null, false, { message: 'Account not found!' });
+
                 if (!await user.isCorrectPassword(password))
                     return done(null, false, { message: 'Incorrect password!' });
 
@@ -25,7 +27,7 @@ const initializePassport = (passport) => {
 
     passport.deserializeUser(async function (id, done) {
         try {
-            const user = await AccountAdmin.findById(id);
+            const user = await AccountAdmins.findById(id);
             done(null, user);
         } catch (error) {
             done(error, null);

@@ -1,18 +1,18 @@
 const asyncHandler = require("express-async-handler");
 const initializePassport = require("../middlewares/passport");
 const passport = require("passport");
-const Account = require("../models/accountAdmin");
+const AccountAdmins = require("../models/accountAdmin");
 const { generateAccessToken, generateRefreshToken } = require("../middlewares/jwt");
 
 initializePassport(passport);
 
-const loginAdmin = asyncHandler(async (req, res, next) => {
+const loginAdmin = asyncHandler (async (req, res, next) => {
   passport.authenticate("local-admin", async (err, user, info) => {
     try {
       if (err) {
         // throw err;
         return res.status(400).json({
-          sucess: false,
+          success: false,
           message: "Failed"
         })
       }
@@ -27,7 +27,7 @@ const loginAdmin = asyncHandler(async (req, res, next) => {
         if (err) {
           // throw err;
           return res.status(400).json({
-            sucess: false,
+            success: false,
             message: "Failed"
           })
         }
@@ -37,7 +37,7 @@ const loginAdmin = asyncHandler(async (req, res, next) => {
         const newRefreshToken = generateRefreshToken(user._id);
         
         // Update refresh token in the database
-        const updatedUser = await Account.findByIdAndUpdate(
+        const updatedUser = await AccountAdmins.findByIdAndUpdate(
           user._id,
           { refreshToken: newRefreshToken },
           { new: true }

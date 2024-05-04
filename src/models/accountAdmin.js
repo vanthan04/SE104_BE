@@ -13,6 +13,7 @@ var accountSchema = new mongoose.Schema(
         },
         refreshToken:{
             type:String,
+            default: null
         },
     },
     {
@@ -33,4 +34,4 @@ accountSchema.methods = {
         return await bcrypt.compare(password, this.password);
     }
 }
-module.exports = mongoose.model("AccountAdmin", accountSchema);
+module.exports = mongoose.model("AccountAdmins", accountSchema);

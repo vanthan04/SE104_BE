@@ -1,7 +1,6 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt")
-const Reader_Rules = require("./Reader_Rules")
-
+const {calculateDate} = require("../helps/calculateTime")
 
 var ReaderSchema = new mongoose.Schema(
     {
@@ -68,29 +67,18 @@ ReaderSchema.methods = {
     isCorrectPassword: async function(password){
         return await bcrypt.compare(password, this.Password);
     },
-    // updateQuyDinh: async function(){
-    //     try {
-    //         const latestRow = await Reader_Rules.findOne().sort({createdAt: -1});
-    //         if (!latestRow) {
-    //             console.error(err);
-    //             return;
-    //         }
-
-
-    //         const minNgaySinh = calculateDateFromAge(latestRow.TuoiToiThieu); 
-    //         const maxNgaySinh = calculateDateFromAge(latestRow.TuoiToiDa);
-
-    //         // Cập nhật giá trị cho trường NgaySinh trong userSchema
-    //         this.path('NgaySinh').options.min = maxNgaySinh;
-    //         this.path('NgaySinh').options.max = minNgaySinh;
-
-    //         this.GiaTriSuDung = latestRow.GiaTriThe;
-
-
-    //     } catch (error) {
-    //         console.log(error)
-    //     }
-        
-    // }
+    updateReader: async function(minAge, maxAge, cardValue){
+        if (calculateDate(this.dateofbirth) < minAge || calculateDate(this.dateofbirth) > maxAge){
+            this.isLocked = true;
+        } else {
+            this.isLocked = false;
+        }
+        if (calculateDate(this.CardIssuanceDate) > (cardValue/12) || calculateDate(this.CardIssuanceDate) < 0){
+            this.isLocked = true;
+        } else {
+            this.isLocked = false;
+        }
+        await this.save();
+    }
 }
 module.exports = mongoose.model("Readers", ReaderSchema);
