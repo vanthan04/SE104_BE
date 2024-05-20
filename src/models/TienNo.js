@@ -1,18 +1,18 @@
 const mongoose = require("mongoose")
 
-const FineMoneySchema = new mongoose.Schema(
+const TienNoSchema = new mongoose.Schema(
     {
-        Book_Borrow_Return:{
+        SachTra:{
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'Book_Borrow_Return'
+            ref: 'MuonTraSach'
         },
-        Late_payment_date:{
+        ngaytra:{
             type: Date
         },
-        dateofPayment:{
+        ngaytramuon:{
             type: Date
         },
-        FineMoney:{
+        tienno:{
             type: Number
         }
     },
@@ -21,4 +21,4 @@ const FineMoneySchema = new mongoose.Schema(
     }
 )
 
-module.exports = mongoose.model('FineMoney', FineMoneySchema)
+module.exports = mongoose.model('TienNo', TienNoSchema)

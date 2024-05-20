@@ -2,14 +2,14 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcrypt")
 const {calculateDate} = require("../helps/calculateTime")
 
-var ReaderSchema = new mongoose.Schema(
+var DocGiaSchema = new mongoose.Schema(
     {
-        readerID:{
+        MaDG:{
             type: String,
             required: true,
             unique: true
         },
-        fullname:{
+        hoten:{
             type: String,
             require:true
         },
@@ -20,28 +20,28 @@ var ReaderSchema = new mongoose.Schema(
         },
         password:{
             type: String,
-            require: true,
+            require: true
         },
-        address:{
+        diachi:{
             type: String,
         },
-        typeofReader:{
+        loaidocgia:{
             type: String,
             enum: ['X', 'Y'],
             require: true
         },
-        dateofbirth:{
+        ngaysinh:{
             type: Date,
         },
         isLocked:{
             type: Boolean,
             default: false
         },
-        CardIssuanceDate:{
+        ngaylapthe:{
             type: Date,
             require: true,
         },
-        total_owed:{
+        tongno:{
             type: Number,
             default: 0
         },
@@ -55,25 +55,34 @@ var ReaderSchema = new mongoose.Schema(
     }
 )
 
-ReaderSchema.pre('save', async function(next) {
-    if (this.isModified('password')) {
-        const salt = bcrypt.genSaltSync(10);
-        this.password = await bcrypt.hash(this.password, salt);
+DocGiaSchema.pre('save', async function(next) {
+    if (!this.password) {
+        // Nếu mật khẩu không được cung cấp, tạo mật khẩu mặc định
+        const defaultPassword = '123456789'; // Bạn có thể thay đổi thành mật khẩu mặc định mong muốn
+        // Hash mật khẩu mặc định
+        const salt = await bcrypt.genSalt(10);
+        this.password = await bcrypt.hash(defaultPassword, salt);
+    } else {
+        // Nếu mật khẩu đã được cung cấp, hash mật khẩu trước khi lưu
+        if (this.isModified('password')) {
+            const salt = await bcrypt.genSalt(10);
+            this.password = await bcrypt.hash(this.password, salt);
+        }
     }
     next();
 });
 
-ReaderSchema.methods = {
+DocGiaSchema.methods = {
     isCorrectPassword: async function(password){
         return await bcrypt.compare(password, this.Password);
     },
     updateReader: async function(minAge, maxAge, cardValue){
-        if (calculateDate(this.dateofbirth) < minAge || calculateDate(this.dateofbirth) > maxAge){
+        if (calculateDate(this.ngaysinh) < minAge || calculateDate(this.ngaysinh) > maxAge){
             this.isLocked = true;
         } else {
             this.isLocked = false;
         }
-        if (calculateDate(this.CardIssuanceDate) > (cardValue/12) || calculateDate(this.CardIssuanceDate) < 0){
+        if (calculateDate(this.ngaylapthe) > (cardValue/12) || calculateDate(this.ngaylapthe) < 0){
             this.isLocked = true;
         } else {
             this.isLocked = false;
@@ -81,4 +90,4 @@ ReaderSchema.methods = {
         await this.save();
     }
 }
-module.exports = mongoose.model("Readers", ReaderSchema);
+module.exports = mongoose.model("DocGia", DocGiaSchema);

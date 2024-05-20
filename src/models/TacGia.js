@@ -1,8 +1,8 @@
 const mongoose = require("mongoose")
 
-const AuthorSchema = new mongoose.Schema(
+const TacGiaSchema = new mongoose.Schema(
     {
-        authorName:{
+        tentacgia:{
             type: String
         }
     },
@@ -12,21 +12,22 @@ const AuthorSchema = new mongoose.Schema(
 )
 
 TacGiaSchema.methods = {
-    CheckTheNumberOfAuthors: async function(){
+    KiemTraSoLuongTacGia: async function(){
         try {
-            await TacGiaSchema.distinct('authorName', (err, uniqueNames) => {
+            await TacGiaSchema.distinct('tentacgia', (err, uniqueNames) => {
                 if (err) {
                     console.error(err);
-                    return;
+                    return -1;
                 }
                 const count = uniqueNames.length;
                 return count;
             });
         } catch (error) {
-           console.log(error) 
+           console.log(error);
+           return -1;
         }
         
     }
 }
 
-module.exports = mongoose.model("Author", AuthorSchema)
+module.exports = mongoose.model("TacGia", AuthorSchema)

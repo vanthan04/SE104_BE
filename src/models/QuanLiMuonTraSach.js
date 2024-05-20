@@ -1,20 +1,20 @@
 const mongoose = require("mongoose")
-const Book_Borrow_Return_Schema = new mongoose.Schema(
+const MuonTraSachSchema = new mongoose.Schema(
     {
-        ReaderInfor:{
+        ThongtinDocGia:{
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Readers'
         },
-        BorrowedBooksList:[
+        DanhSachMuon:[
             {
-                BookBorrow:{
+                sachmuon:{
                     type: mongoose.Schema.Types.ObjectId,
-                    ref: 'Books'
+                    ref: 'Sach'
                 },
-                dateofBorrow: {
+                ngaymuon: {
                     type: Date
                 },
-                dateofReturn:{
+                ngaytra:{
                     type: Date
                 }
             }
@@ -26,4 +26,4 @@ const Book_Borrow_Return_Schema = new mongoose.Schema(
     }
 )
 
-module.exports = mongoose.model("Book_Borrow_Return", Book_Borrow_Return_Schema)
+module.exports = mongoose.model("MuonTraSach", Book_Borrow_Return_Schema)

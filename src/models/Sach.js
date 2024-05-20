@@ -1,45 +1,44 @@
 const mongoose = require("mongoose")
 const TacGia = require("./TacGia")
-const QuyDinhSach = require("./Book_Rules")
 
-const BookSchema = new mongoose.Schema(
+const SachSchema = new mongoose.Schema(
     {
-        BookID:{
+        MaSach:{
             type: String,
             required: true,
             unique: true
         },
-        title:{
+        tensach:{
             type: String,
             required: true
         },
-        genre:{
+        theloai:{
             type: String,
             required: true,
         },
-        TacGia:[{
+        tacgia:[{
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Author',
         }],
-        publishYear:{
+        namxuatban:{
             type: Number,
             required: true,
             min: calculateDateFromAge(8)
         },
-        publisher:{
+        nhaxuatban:{
             type: String,
             required: true
         },
-        dateofentry:{
+        ngaynhap:{
             type: Date,
             required: true
         },
-        condition:{
+        tinhtrang:{
             type: String,
             enum: ["Còn Trống", "Đã mượn", "Mất"],
             default: "Còn Trống"
         },
-        price:{
+        gia:{
             type:Number,
             reuiqred: true
         }
@@ -53,17 +52,7 @@ const BookSchema = new mongoose.Schema(
 SachSchema.methods = {
     updateQuyDinh: async function(){
         try {
-            const latestRow = await QuyDinhSach.findOne().sort({createdAt: -1});
-            if (!latestRow) {
-                console.error(err);
-                return;
-            }
-
-            const theLoaiList = qds.DSTheLoai.map((item) => item.TenTheLoai);
-            this.path("TheLoaiSach").enum(theLoaiList);
-
-            const khoangcach = calculateDateFromAge(latestRow.KhoangCachXuatBan);
-            this.path("NamXuatBan").options.min = khoangcach
+            
 
         } catch (error) {
             console.log(error)

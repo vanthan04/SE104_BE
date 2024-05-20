@@ -1,30 +1,30 @@
 const mongoose = require("mongoose")
 
-const Rules_Schema = new mongoose.Schema(
+const QuyDinhSchema = new mongoose.Schema(
     {
-        minAge:{
+        tuoitoithieu:{
             type: Number,
         },
-        maxAge:{
+        tuoitoida:{
             type: Number
         },
-        cardValue:{
+        giatrithe:{
             type: Number
         },
-        genres: [
+        DStheloai: [
             {
-                title:{
+                tentheloai:{
                     type: String
                 }
             }
         ],
-        Publishing_distance:{
+        khoangcachxuatban:{
             type: Number
         },
-        MaxOfBorrowedBooks:{
+        soluongsachmuontoida:{
             type: Number
         },
-        MaxOfBorrowedDays:{
+        songaymuontoida:{
             type: Number
         }
     },
@@ -33,4 +33,4 @@ const Rules_Schema = new mongoose.Schema(
     }
 )
 
-module.exports = mongoose.model("Rules", Rules_Schema)
+module.exports = mongoose.model("QuyDinh", QuyDinhSchema)
