@@ -15,11 +15,17 @@ app.use(cors())
 
 
 
+app.set('trust proxy', 1);
+
 app.use(session({
-    secret: 'test',
-    resave: false,
-    saveUninitialized: false
-  }));
+  secret: 'secret',
+  saveUninitialized: true,
+  resave: false,
+  maxAge: 1000 * 60 * 15,
+  cookie:{
+      secure: true
+        }
+}))
 
 app.use(passport.initialize());
 app.use(passport.session());

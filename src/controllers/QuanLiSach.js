@@ -31,3 +31,13 @@ const createNewBook = async (req, res) => {
         })
     }
 }
+
+const getAllBooks = async (req, res) => {
+
+}
+
+
+module.exports = {
+    createNewBook,
+
+}
