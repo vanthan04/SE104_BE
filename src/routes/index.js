@@ -4,7 +4,6 @@ const Reader_Manage_Router = require("./QuanLiDocGia")
 const Rule_Manage_Router = require("./QuanLiQuyDinh")
 const Book_Manage_Router = require("./QuanLiSach")
 const { notFound, errHandler } = require("../middlewares/errHandle")
-consy
 const initRoutes = (app) => {
     app.use('/api/user', userRouter)
     app.use('/api/admin', adminRouter)
