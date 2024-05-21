@@ -30,4 +30,4 @@ TacGiaSchema.methods = {
     }
 }
 
-module.exports = mongoose.model("TacGia", AuthorSchema)
+module.exports = mongoose.model("TacGia", TacGiaSchema)

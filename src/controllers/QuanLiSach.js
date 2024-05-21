@@ -1,7 +1,7 @@
 const Rules = require("../models/QuyDinh")
 const {calculateDate} = require("../helps/calculateTime")
 const Books = require("../models/Sach")
-const Author = require("../model/TacGia")
+const Author = require("../models/TacGia")
 
 const createNewBook = async (req, res) => {
     const {tensach, theloai, tacgia, namxuatban, nhaxuatban, ngaynhap, trigia} = req.body;
