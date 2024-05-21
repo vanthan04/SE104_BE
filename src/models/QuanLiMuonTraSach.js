@@ -26,4 +26,4 @@ const MuonTraSachSchema = new mongoose.Schema(
     }
 )
 
-module.exports = mongoose.model("MuonTraSach", Book_Borrow_Return_Schema)
+module.exports = mongoose.model("MuonTraSach", MuonTraSachSchema)

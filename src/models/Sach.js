@@ -23,7 +23,6 @@ const SachSchema = new mongoose.Schema(
         namxuatban:{
             type: Number,
             required: true,
-            min: calculateDateFromAge(8)
         },
         nhaxuatban:{
             type: String,
@@ -38,8 +37,9 @@ const SachSchema = new mongoose.Schema(
             enum: ["Còn Trống", "Đã mượn", "Mất"],
             default: "Còn Trống"
         },
+        
         gia:{
-            type:Number,
+            type: Number,
             reuiqred: true
         }
     },

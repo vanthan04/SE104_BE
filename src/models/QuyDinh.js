@@ -4,28 +4,38 @@ const QuyDinhSchema = new mongoose.Schema(
     {
         tuoitoithieu:{
             type: Number,
+            default: -Infinity
         },
         tuoitoida:{
-            type: Number
+            type: Number,
+            default: Infinity
         },
         giatrithe:{
-            type: Number
+            type: Number,
+            default: Infinity
         },
-        DStheloai: [
-            {
-                tentheloai:{
-                    type: String
+
+        DStheloai: {
+            type: [
+              {
+                tentheloai: {
+                  type: String
                 }
-            }
-        ],
+              }
+            ],
+            default: []
+        },
         khoangcachxuatban:{
-            type: Number
+            type: Number,
+            default: Infinity
         },
         soluongsachmuontoida:{
-            type: Number
+            type: Number,
+            default: Infinity
         },
         songaymuontoida:{
-            type: Number
+            type: Number,
+            default: Infinity
         }
     },
     {

@@ -13,7 +13,7 @@ const verifyAccessToken= asyncHandler ( async(req,res,next)=>{
             })
 
             req.user=decode
-            next()
+            next();
         })
     }
     else{

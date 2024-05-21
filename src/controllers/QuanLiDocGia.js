@@ -86,7 +86,6 @@ const createNewReader = async (req, res) => {
                 loaidocgia: loaidocgia,
                 ngaylapthe: new Date(ngaylapthe)
             });
-            console.log(newReader);
             const {password, refreshToken, ...data} = newReader.toObject(); 
             NgaySinh = formatDate(newReader.ngaysinh);
             NgayLapThe = formatDate(newReader.ngaylapthe);
