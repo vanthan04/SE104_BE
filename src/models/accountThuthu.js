@@ -15,7 +15,6 @@ var accountThuthuSchema = new mongoose.Schema(
         fullname:{
             type: String,
         },
-        
         refreshToken:{
             type:String,
             default: null

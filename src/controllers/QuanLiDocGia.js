@@ -165,6 +165,12 @@ const updateReader = async (req, res) => {
 const deleteReader = async (req, res) => {
     try {
         const MaDG = req.query.MaDG;
+        if (!MaDG) {
+            return res.status(400).json({
+                success: false,
+                message: 'ReaderID is required'
+            });
+        }
         const docgia = await DocGia.findOneAndDelete({MaDG: MaDG});
         if (!docgia){
             return res.status(400).json({
@@ -226,6 +232,13 @@ const getAllReaders = async (req, res) => {
 const findReaderByMaDG = async (req, res) => {
     try {
         const MaDG = req.query.MaDG;
+
+        if (!MaDG) {
+            return res.status(400).json({
+                success: false,
+                message: 'MaDG is required from query!'
+            });
+        }
         const reader = await DocGia.findOne({ MaDG: MaDG }).select('-refreshToken -password');
         if (!reader) {
             return res.status(400).json({
@@ -252,6 +265,14 @@ const findReaderByMaDG = async (req, res) => {
 const findReaderByFullname = async (req, res) => {
     try {
         const hoten = req.query.hoten;
+
+        if (!hoten) {
+            return res.status(400).json({
+                success: false,
+                message: 'HoTen is required from query!'
+            });
+        }
+
         const readers = await DocGia.find({ hoten: hoten }).select('-refreshToken -password');
         if (!readers || readers.length === 0) {
             return res.status(400).json({
@@ -281,6 +302,14 @@ const findReaderByFullname = async (req, res) => {
 const findReaderByEmail = async (req, res) => {
     try {
         const email = req.query.email;
+        
+        if (!email) {
+            return res.status(400).json({
+                success: false,
+                message: 'email is required from query!'
+            });
+        }
+
         const reader = await DocGia.findOne({ email: email }).select('-refreshToken -password');
         if (!reader) {
             return res.status(400).json({

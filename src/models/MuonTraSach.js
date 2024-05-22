@@ -3,7 +3,7 @@ const MuonTraSachSchema = new mongoose.Schema(
     {
         ThongtinDocGia:{
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'Readers'
+            ref: 'DocGia'
         },
         DanhSachMuon:[
             {
@@ -17,6 +17,9 @@ const MuonTraSachSchema = new mongoose.Schema(
                 ngaytra:{
                     type: Date
                 }
+            },
+            {
+                timestamps: true
             }
         ]
 

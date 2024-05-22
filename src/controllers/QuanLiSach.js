@@ -134,8 +134,36 @@ const createNewBook = async (req, res) => {
 const updateBook = async (req, res) => {
     
 }
-const deleteBook = async (req, res) => {
 
+const deleteBook = async (req, res) => {
+    try {
+        
+        const MaSach = req.query.MaSach;
+
+        if (!MaSach) {
+            return res.status(400).json({
+                success: false,
+                message: 'BookID is required from query!'
+            });
+        }
+        const sach = await Books.findOneAndDelete({MaSach: MaSach}) ;
+        if (!sach){
+            return res.status(400).json({
+                success: false,
+                message: `Don't find book`
+            })
+        } 
+        return res.status(200).json({
+            success: true,
+            message: 'Delete book successfully'
+        })
+    } catch (error) {
+        console.log(error.message)
+        return res.status(500).json({
+            success: false,
+            message: 'Internal Server Error!'
+        })
+    }
 }
 
 const getAllBooks = async (req, res) => {
@@ -147,9 +175,13 @@ const getAllBooks = async (req, res) => {
                 message: 'No books!'
             })
         } else {
+            const formattedBook = allBooks.map(book => {
+                const formattedNgayNhap = formatDate(book.ngaynhap);
+                return { ...book.toObject(), ngaynhap: formattedNgayNhap};
+            });
             return res.status(200).json({
                 success: true,
-                data: allBooks
+                data: formattedBook
             })
         }
     } catch (error) {
@@ -163,7 +195,28 @@ const getAllBooks = async (req, res) => {
 
 const findBookByName = async (req, res) => {
     try {
-        
+        const tensach = req.query.TenSach;
+
+        if (!tensach) {
+            return res.status(400).json({
+                success: false,
+                message: 'TenSach is required from query!'
+            });
+        }
+
+        const book = await Books.findOne({tensach: tensach});
+        if (!book){
+            return res.status(400).json({
+                success: false,
+                message: `Don't' find book!`
+            })
+        }
+        const formattedNgayNhap = formatDate(book.ngaynhap);
+        return res.status(200).json({
+            success: true,
+            data: { ...book.toObject(), ngaynhap: formattedNgayNhap}
+        })
+
     } catch (error) {
         console.log(error.message);
         return res.status(500).json({
@@ -174,7 +227,36 @@ const findBookByName = async (req, res) => {
 }
 
 const findBookByBookID = async (req, res) => {
+    try {
+        const BookID = req.query.MaSach;
 
+        if (!BookID) {
+            return res.status(400).json({
+                success: false,
+                message: 'BookID is required from query!'
+            });
+        }
+
+        const book = await Books.findOne({MaSach: BookID});
+        if (!book){
+            return res.status(400).json({
+                success: false,
+                message: `Don't' find book!`
+            })
+        }
+        const formattedNgayNhap = formatDate(book.ngaynhap);
+        return res.status(200).json({
+            success: true,
+            data: { ...book.toObject(), ngaynhap: formattedNgayNhap}
+        })
+
+    } catch (error) {
+        console.log(error.message);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal Server Error!'
+        })
+    }
 }
 
 module.exports = {

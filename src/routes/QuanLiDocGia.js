@@ -3,7 +3,7 @@ const ctrls = require("../controllers/QuanLiDocGia")
 const { verifyAccessToken } = require("../middlewares/verifyToken")
 
 router.post('/createNewReader', verifyAccessToken, ctrls.createNewReader)
-router.post('/updateReader', verifyAccessToken ,ctrls.updateReader)
+router.put('/updateReader', verifyAccessToken ,ctrls.updateReader)
 router.post('/deleteReader', verifyAccessToken, ctrls.deleteReader)
 router.get('/getAllReaders', verifyAccessToken, ctrls.getAllReaders)
 router.get('/findReaderByMaDG', verifyAccessToken, ctrls.findReaderByMaDG)
