@@ -1,10 +1,9 @@
 const DocGia = require("../models/DocGia")
 const QuyDinh = require("../models/QuyDinh")
 const {calculateDate} = require("../helps/calculateTime")
-const {formatDate} = require("../helps/fixDate")
+const {formatDatetoShow, formatDatetoUpdate} = require("../helps/fixDate")
 
 const createNewReader = async (req, res) => {
-    let NgaySinh, NgayLapThe; // Khai báo biến NgaySinh và NgayLapThe ở đầu hàm
     try {
         const {hoten, email, loaidocgia, ngaysinh, diachi, ngaylapthe} = req.body;
         console.log(req.body);
@@ -12,7 +11,7 @@ const createNewReader = async (req, res) => {
         if (!hoten || !ngaysinh || !diachi || !email || !loaidocgia || !ngaylapthe){
             return res.status(400).json({
                 success: false,
-                message: "Missing inputs!"
+                message: "Thiếu dữ liệu!"
             });
         }
 
@@ -21,7 +20,7 @@ const createNewReader = async (req, res) => {
         if (isExistEmail){
             return res.status(400).json({
                 success: false,
-                message: "Email has existed!"
+                message: "Email đã tồn tại!"
             });
         }
 
@@ -41,14 +40,14 @@ const createNewReader = async (req, res) => {
             if (calculateDate(ngaysinh) < 0 || calculateDate(ngaysinh) < rule.tuoitoithieu || calculateDate(ngaysinh) > rule.tuoitoida){
                 return res.status(400).json({
                     success: false,
-                    message: "Wrong age rule" // Sai quy định tuổi
+                    message: "Sai quy định độ tuổi. Vui lòng xem quy định!" // Sai quy định tuổi
                 });
             } else {
                 // Kiểm tra hợp lệ của giá trị thẻ
                 if (calculateDate(ngaylapthe) <= 0 || calculateDate(ngaylapthe) > (rule.giatrithe/12) || calculateDate(ngaylapthe) < 0) {
                     return res.status(400).json({
                         success: false,
-                        message: "Wrong card value rule" // Sai quy định giá trị thẻ
+                        message: "Sai quy định giá trị thẻ. Vui lòng xem quy định!" // Sai quy định giá trị thẻ
                     });
                 } else {
                     const newReader = await DocGia.create({
@@ -60,17 +59,16 @@ const createNewReader = async (req, res) => {
                         loaidocgia: loaidocgia,
                         ngaylapthe: new Date(ngaylapthe)
                     });
-                    const {password, refreshToken, ...data} = newReader.toObject();  
-                    NgaySinh = formatDate(newReader.ngaysinh);
-                    NgayLapThe = formatDate(newReader.ngaylapthe);
+                    // NgaySinh = formatDatetoUpdate(newReader.ngaysinh);
+                    // NgayLapThe = formatDatetoUpdate(newReader.ngaylapthe);
                     return res.status(200).json({
                         success: true,
-                        message: "Create reader successfully!",
-                        data: {
-                            ...data,
-                            ngaysinh: NgaySinh,
-                            ngaylapthe: NgayLapThe
-                        }
+                        message: "Tạo mới độc giả thành công!",
+                        // data: {
+                        //     ...data,
+                        //     ngaysinh: NgaySinh,
+                        //     ngaylapthe: NgayLapThe
+                        // }
                     });
                 }   
             }
@@ -79,14 +77,14 @@ const createNewReader = async (req, res) => {
             if (calculateDate(ngaysinh) < 0 ){
                 return res.status(400).json({
                     success: false,
-                    message: "Wrong age rule" // Sai quy định tuổi
+                    message: "Sai quy định giá trị thẻ. Vui lòng xem quy định!" // Sai quy định tuổi
                 });
             } else {
                 // Kiểm tra hợp lệ của giá trị thẻ
                 if (calculateDate(ngaylapthe) <= 0) {
                     return res.status(400).json({
                         success: false,
-                        message: "Wrong card value rule" // Sai quy định giá trị thẻ
+                        message: "Sai quy định giá trị thẻ. Vui lòng xem quy định!" // Sai quy định giá trị thẻ
                     })
                 }
             }
@@ -100,16 +98,16 @@ const createNewReader = async (req, res) => {
                 ngaylapthe: new Date(ngaylapthe)
             });
             const {password, refreshToken, ...data} = newReader.toObject(); 
-            NgaySinh = formatDate(newReader.ngaysinh);
-            NgayLapThe = formatDate(newReader.ngaylapthe);
+            // NgaySinh = formatDatetoUpdate(newReader.ngaysinh);
+            // NgayLapThe = formatDatetoUpdate(newReader.ngaylapthe);
             return res.status(200).json({
                 success: true,
-                message: "Create reader successfully!",
-                data: {
-                    ...data,
-                    ngaysinh: NgaySinh,
-                    ngaylapthe: NgayLapThe
-                }
+                message: "Tạo mới độc giả thành công!",
+                // data: {
+                //     ...data,
+                //     ngaysinh: NgaySinh,
+                //     ngaylapthe: NgayLapThe
+                // }
             });
         }
     } catch (error) {
@@ -126,17 +124,17 @@ const updateReader = async (req, res) => {
     try {
         const {MaDG, hoten, ngaysinh, diachi, email, loaidocgia, ngaylapthe} = req.body;
         const reader = await DocGia.findOne({MaDG: MaDG});
-        if(!reader){
+        if(!reader || reader.isDelete){
             return res.status(400).json({
                 success: false,
-                message: `Don't find reader!`
+                message: `Không tìm thấy độc giả!`
             })
         }
 
         if (hoten === reader.hoten && (new Date(ngaysinh)).getTime() === reader.ngaysinh.getTime() && diachi === reader.diachi && email === reader.email && loaidocgia === reader.loaidocgia && (new Date(ngaylapthe)).getTime() === reader.ngaylapthe.getTime()){
             return res.status(400).json({
                 success: false,
-                message: 'No modify!'
+                message: 'Không có sự thay đổi!'
             })
         }
         const updatereader = await DocGia.findOneAndUpdate(
@@ -153,18 +151,40 @@ const updateReader = async (req, res) => {
         )
         const rule = await QuyDinh.findOne({});
         if (rule){
+            if (calculateDate(ngaysinh) < 0 || calculateDate(ngaysinh) < rule.tuoitoithieu || calculateDate(ngaysinh) > rule.tuoitoida){
+                return res.status(400).json({
+                    success: false,
+                    message: "Sai quy định độ tuổi. Vui lòng xem quy định!" // Sai quy định tuổi
+                });
+            } else {
+                // Kiểm tra hợp lệ của giá trị thẻ
+                if (calculateDate(ngaylapthe) <= 0 || calculateDate(ngaylapthe) > (rule.giatrithe/12) || calculateDate(ngaylapthe) < 0) {
+                    return res.status(400).json({
+                        success: false,
+                        message: "Sai quy định giá trị thẻ. Vui lòng xem quy định!" // Sai quy định giá trị thẻ
+                    });
+                }
+            }
+
             await updatereader.updateReader(rule.tuoitoithieu, rule.tuoitoida, rule.giatrithe)
         }
-        let {refreshToken, password, NgaySinh, NgayLapThe, ...data} = updatereader.toObject();
-        NgaySinh = formatDate(NgaySinh);
-        NgayLapThe = formatDate(NgayLapThe)
+
+        const formattedtoUpdateNgaysinh = formatDatetoUpdate(ngaysinh);
+        const formattedtoUpdateNgayLapThe = formatDatetoUpdate(ngaylapthe)
+        const formattedtoShowNgaysinh = formatDatetoShow(ngaysinh);
+        const formattedtoShowNgayLapThe = formatDatetoShow(ngaylapthe);
+
+        // Trả về một đối tượng mới với ngày sinh đã được định dạng
+
         return res.status(200).json({
             success: true,
-            message: 'Update Reader successfully!',
+            message: 'Cập nhật độc giả thành công!',
             data: {
-                ...data,
-                ngaysinh: NgaySinh,
-                ngaylapthe: NgayLapThe
+                ...updatereader.toObject(),
+                ngaysinhtoUpdate: formattedtoUpdateNgaysinh,
+                ngaylapthetoUpdate: formattedtoUpdateNgayLapThe,
+                ngaysinhtoShow: formattedtoShowNgaysinh,
+                ngaylapthetoShow: formattedtoShowNgayLapThe
             }
         })
     } catch (error) {
@@ -181,19 +201,27 @@ const deleteReader = async (req, res) => {
         if (!MaDG) {
             return res.status(400).json({
                 success: false,
-                message: 'ReaderID is required'
+                message: 'Chọn mã độc giả để xóa!'
             });
         }
-        const docgia = await DocGia.findOneAndDelete({MaDG: MaDG});
-        if (!docgia){
+        // Cập nhật biến isDelete bằng true với độc giả bị xóa
+        const docgia = await DocGia.findOneAndUpdate(
+            {MaDG: MaDG},
+            {isDelete: true},
+            {new: true}
+        
+        );
+
+        if (!docgia || docgia.isDelete){
             return res.status(400).json({
                 success: false,
-                message: `Don't find reader`
+                message: 'Không tìm thấy độc giả!'
             })
         }
+
         return res.status(200).json({
             success: true,
-            message: 'Delete reader successfully!'
+            message: 'Xóa độc giả thành công!'
         })
     } catch (error) {
         console.log(error.message)
@@ -206,25 +234,31 @@ const deleteReader = async (req, res) => {
 
 const getAllReaders = async (req, res) => {
     try {
-        const allreader = await DocGia.find({}).select('-refreshToken -password');
+        const allreader = await DocGia.find({});
 
         if (allreader === null){
-
             return res.status(400).json({
                 success: false,
-                message: 'No readers!'
+                message: 'Không có độc giả!',
+                data: []
             })
         } else {
             const formattedReaders = allreader.map(reader => {
                 // Chuyển đổi ngày sinh từ đối tượng Date sang chuỗi có định dạng "DD-MM-YYYY"
-                const formattedNgaysinh = formatDate(reader.ngaysinh);
-                const formattedNgayLapThe = formatDate(reader.ngaylapthe)
+                const formattedtoUpdateNgaysinh = formatDatetoUpdate(reader.ngaysinh);
+                const formattedtoUpdateNgayLapThe = formatDatetoUpdate(reader.ngaylapthe)
+                const formattedtoShowNgaysinh = formatDatetoShow(reader.ngaysinh);
+                const formattedtoShowNgayLapThe = formatDatetoShow(reader.ngaylapthe);
                 // Trả về một đối tượng mới với ngày sinh đã được định dạng
-                return {
-                    ...reader.toObject(),
-                    ngaysinh: formattedNgaysinh,
-                    ngaylapthe: formattedNgayLapThe
-                };
+                if (!reader.isDelete){
+                    return {
+                        ...reader.toObject(),
+                        ngaysinhtoUpdate: formattedtoUpdateNgaysinh,
+                        ngaylapthetoUpdate: formattedtoUpdateNgayLapThe,
+                        ngaysinhtoShow: formattedtoShowNgaysinh,
+                        ngaylapthetoShow: formattedtoShowNgayLapThe
+                    };
+                }
             });
 
             return res.status(200).json({
@@ -249,21 +283,30 @@ const findReaderByMaDG = async (req, res) => {
         if (!MaDG) {
             return res.status(400).json({
                 success: false,
-                message: 'MaDG is required from query!'
+                message: 'Yêu cầu nhập mã độc giả!'
             });
         }
-        const reader = await DocGia.findOne({ MaDG: MaDG }).select('-refreshToken -password');
-        if (!reader) {
+        const reader = await DocGia.findOne({ MaDG: MaDG });
+        if (!reader || reader.isDelete) {
             return res.status(400).json({
                 success: false,
-                message: `Don't find reader`
+                message: 'Không tìm thấy độc giả!',
+                data: []
             });
         } else {
-            const formattedNgaysinh = formatDate(reader.ngaysinh);
-            const formattedNgaylapthe = formatDate(reader.ngaylapthe);
+            const formattedtoUpdateNgaysinh = formatDatetoUpdate(reader.ngaysinh);
+            const formattedtoUpdateNgayLapThe = formatDatetoUpdate(reader.ngaylapthe)
+            const formattedtoShowNgaysinh = formatDatetoShow(reader.ngaysinh);
+            const formattedtoShowNgayLapThe = formatDatetoShow(reader.ngaylapthe);
             return res.status(200).json({
                 success: true,
-                data: { ...reader.toObject(), ngaysinh: formattedNgaysinh, ngaylapthe: formattedNgaylapthe }
+                data: {
+                    ...reader.toObject(),
+                    ngaysinhtoShow: formattedtoShowNgaysinh, 
+                    ngaylapthetoShow: formattedtoShowNgayLapThe,
+                    ngaysinhtoUpdate: formattedtoUpdateNgaysinh,
+                    ngaylapthetoUpdate: formattedtoUpdateNgayLapThe
+                }
             });
         }
     } catch (error) {
@@ -282,22 +325,47 @@ const findReaderByFullname = async (req, res) => {
         if (!hoten) {
             return res.status(400).json({
                 success: false,
-                message: 'HoTen is required from query!'
+                message: 'Yêu cầu nhập họ và tên độc giả để tìm kiếm!'
             });
         }
 
-        const readers = await DocGia.find({ hoten: hoten }).select('-refreshToken -password');
+        let count = 0;
+        const readers = await DocGia.find({ hoten: hoten });
         if (!readers || readers.length === 0) {
             return res.status(400).json({
                 success: false,
-                message: `Don't find reader`
+                message: 'Không tìm thấy độc giả!',
+                data: []
             });
         } else {
+            
             const formattedReaders = readers.map(reader => {
-                const formattedNgaysinh = formatDate(reader.ngaysinh);
-                const formattedNgaylapthe = formatDate(reader.ngaylapthe);
-                return { ...reader.toObject(), ngaysinh: formattedNgaysinh, ngaylapthe: formattedNgaylapthe };
+                const formattedtoUpdateNgaysinh = formatDatetoUpdate(reader.ngaysinh);
+                const formattedtoUpdateNgayLapThe = formatDatetoUpdate(reader.ngaylapthe)
+                const formattedtoShowNgaysinh = formatDatetoShow(reader.ngaysinh);
+                const formattedtoShowNgayLapThe = formatDatetoShow(reader.ngaylapthe);
+                if (!reader.isDelete){
+                    return { 
+                        ...reader.toObject(),
+                        ngaysinhtoShow: formattedtoShowNgaysinh, 
+                        ngaylapthetoShow: formattedtoShowNgayLapThe,
+                        ngaysinhtoUpdate: formattedtoUpdateNgaysinh,
+                        ngaylapthetoUpdate: formattedtoUpdateNgayLapThe
+                    };
+                }
+                else{
+                    count += 1
+                }
             });
+            
+            //Kiểm tra số lượng độc giả đã xóa có bằng số lượng độc giả tìm thấy hay không
+            if (count === readers.length){
+                return res.status(400).json({
+                    success: false,
+                    message: 'Không tìm thấy độc giả!',
+                    data: []
+                });
+            }
             return res.status(200).json({
                 success: true,
                 data: formattedReaders
@@ -319,22 +387,31 @@ const findReaderByEmail = async (req, res) => {
         if (!email) {
             return res.status(400).json({
                 success: false,
-                message: 'email is required from query!'
+                message: 'Yêu cầu nhập email để tìm kiếm!'
             });
         }
 
-        const reader = await DocGia.findOne({ email: email }).select('-refreshToken -password');
-        if (!reader) {
+        const reader = await DocGia.findOne({ email: email });
+        if (!reader || reader.isDelete) {
             return res.status(400).json({
                 success: false,
-                message: `Don't find reader`
+                message: 'Không tìm thấy độc giả!',
+                listdata: []
             });
         } else {
-            const formattedNgaysinh = formatDate(reader.ngaysinh);
-            const formattedNgaylapthe = formatDate(reader.ngaylapthe);
+            const formattedtoUpdateNgaysinh = formatDatetoUpdate(reader.ngaysinh);
+            const formattedtoUpdateNgayLapThe = formatDatetoUpdate(reader.ngaylapthe)
+            const formattedtoShowNgaysinh = formatDatetoShow(reader.ngaysinh);
+            const formattedtoShowNgayLapThe = formatDatetoShow(reader.ngaylapthe);
             return res.status(200).json({
                 success: true,
-                data: { ...reader.toObject(), ngaysinh: formattedNgaysinh, ngaylapthe: formattedNgaylapthe }
+                data: {
+                    ...reader.toObject(),
+                    ngaysinhtoShow: formattedtoShowNgaysinh, 
+                    ngaylapthetoShow: formattedtoShowNgayLapThe,
+                    ngaysinhtoUpdate: formattedtoUpdateNgaysinh,
+                    ngaylapthetoUpdate: formattedtoUpdateNgayLapThe
+                }
             });
         }
     } catch (error) {
