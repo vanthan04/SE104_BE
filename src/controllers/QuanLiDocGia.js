@@ -97,7 +97,7 @@ const createNewReader = async (req, res) => {
                 loaidocgia: loaidocgia,
                 ngaylapthe: new Date(ngaylapthe)
             });
-            const {password, refreshToken, ...data} = newReader.toObject(); 
+            // const {password, refreshToken, ...data} = newReader.toObject(); 
             // NgaySinh = formatDatetoUpdate(newReader.ngaysinh);
             // NgayLapThe = formatDatetoUpdate(newReader.ngaylapthe);
             return res.status(200).json({
@@ -137,19 +137,7 @@ const updateReader = async (req, res) => {
                 message: 'Không có sự thay đổi!'
             })
         }
-        const updatereader = await DocGia.findOneAndUpdate(
-            {MaDG: MaDG},
-            {
-                hoten: hoten,
-                ngaysinh: new Date(ngaysinh),
-                diachi: diachi,
-                email: email,
-                loaidocgia: loaidocgia,
-                ngaylapthe: new Date(ngaylapthe)
-            },
-            {new: true}
-        )
-        const rule = await QuyDinh.findOne({});
+
         if (rule){
             if (calculateDate(ngaysinh) < 0 || calculateDate(ngaysinh) < rule.tuoitoithieu || calculateDate(ngaysinh) > rule.tuoitoida){
                 return res.status(400).json({
@@ -168,6 +156,19 @@ const updateReader = async (req, res) => {
 
             await updatereader.updateReader(rule.tuoitoithieu, rule.tuoitoida, rule.giatrithe)
         }
+        const updatereader = await DocGia.findOneAndUpdate(
+            {MaDG: MaDG},
+            {
+                hoten: hoten,
+                ngaysinh: new Date(ngaysinh),
+                diachi: diachi,
+                email: email,
+                loaidocgia: loaidocgia,
+                ngaylapthe: new Date(ngaylapthe)
+            },
+            {new: true}
+        )
+        const rule = await QuyDinh.findOne({});
 
         const formattedtoUpdateNgaysinh = formatDatetoUpdate(ngaysinh);
         const formattedtoUpdateNgayLapThe = formatDatetoUpdate(ngaylapthe)
