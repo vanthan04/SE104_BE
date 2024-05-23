@@ -171,7 +171,7 @@ const updateReader = async (req, res) => {
         )
 
         await updatereader.updateReader(rule.tuoitoithieu, rule.tuoitoida, rule.giatrithe)
-        
+
         const formattedtoUpdateNgaysinh = formatDatetoUpdate(ngaysinh);
         const formattedtoUpdateNgayLapThe = formatDatetoUpdate(ngaylapthe)
         const formattedtoShowNgaysinh = formatDatetoShow(ngaysinh);
@@ -237,31 +237,31 @@ const deleteReader = async (req, res) => {
 
 const getAllReaders = async (req, res) => {
     try {
-        const allreader = await DocGia.find({});
+        const allReaders = await DocGia.find({});
 
-        if (allreader === null){
+        if (allReaders === null){
             return res.status(400).json({
                 success: false,
                 message: 'Không có độc giả!',
                 data: []
             })
         } else {
-            const formattedReaders = allreader.map(reader => {
+            const filteredReaders = allReaders.filter(reader => !reader.isDelete);
+            const formattedReaders = filteredReaders.map(reader => {
                 // Chuyển đổi ngày sinh từ đối tượng Date sang chuỗi có định dạng "DD-MM-YYYY"
                 const formattedtoUpdateNgaysinh = formatDatetoUpdate(reader.ngaysinh);
                 const formattedtoUpdateNgayLapThe = formatDatetoUpdate(reader.ngaylapthe)
                 const formattedtoShowNgaysinh = formatDatetoShow(reader.ngaysinh);
                 const formattedtoShowNgayLapThe = formatDatetoShow(reader.ngaylapthe);
                 // Trả về một đối tượng mới với ngày sinh đã được định dạng
-                if (!reader.isDelete){
-                    return {
-                        ...reader.toObject(),
-                        ngaysinhtoUpdate: formattedtoUpdateNgaysinh,
-                        ngaylapthetoUpdate: formattedtoUpdateNgayLapThe,
-                        ngaysinhtoShow: formattedtoShowNgaysinh,
-                        ngaylapthetoShow: formattedtoShowNgayLapThe
-                    };
-                }
+
+                return {
+                    ...reader.toObject(),
+                    ngaysinhtoUpdate: formattedtoUpdateNgaysinh,
+                    ngaylapthetoUpdate: formattedtoUpdateNgayLapThe,
+                    ngaysinhtoShow: formattedtoShowNgaysinh,
+                    ngaylapthetoShow: formattedtoShowNgayLapThe
+                };
             });
 
             return res.status(200).json({
@@ -333,7 +333,7 @@ const findReaderByFullname = async (req, res) => {
         }
 
         let count = 0;
-        const readers = await DocGia.find({ hoten: hoten });
+        const allReaders = await DocGia.find({ hoten: hoten });
         if (!readers || readers.length === 0) {
             return res.status(400).json({
                 success: false,
@@ -341,28 +341,23 @@ const findReaderByFullname = async (req, res) => {
                 data: []
             });
         } else {
-            
-            const formattedReaders = readers.map(reader => {
+            const filteredReaders = allReaders.filter(reader => !reader.isDelete);
+            const formattedReaders = filteredReaders.map(reader => {
                 const formattedtoUpdateNgaysinh = formatDatetoUpdate(reader.ngaysinh);
                 const formattedtoUpdateNgayLapThe = formatDatetoUpdate(reader.ngaylapthe)
                 const formattedtoShowNgaysinh = formatDatetoShow(reader.ngaysinh);
                 const formattedtoShowNgayLapThe = formatDatetoShow(reader.ngaylapthe);
-                if (!reader.isDelete){
-                    return { 
-                        ...reader.toObject(),
-                        ngaysinhtoShow: formattedtoShowNgaysinh, 
-                        ngaylapthetoShow: formattedtoShowNgayLapThe,
-                        ngaysinhtoUpdate: formattedtoUpdateNgaysinh,
-                        ngaylapthetoUpdate: formattedtoUpdateNgayLapThe
-                    };
-                }
-                else{
-                    count += 1
-                }
+                return { 
+                    ...reader.toObject(),
+                    ngaysinhtoShow: formattedtoShowNgaysinh, 
+                    ngaylapthetoShow: formattedtoShowNgayLapThe,
+                    ngaysinhtoUpdate: formattedtoUpdateNgaysinh,
+                    ngaylapthetoUpdate: formattedtoUpdateNgayLapThe
+                };
             });
             
             //Kiểm tra số lượng độc giả đã xóa có bằng số lượng độc giả tìm thấy hay không
-            if (count === readers.length){
+            if (filteredReaders.length){
                 return res.status(400).json({
                     success: false,
                     message: 'Không tìm thấy độc giả!',
