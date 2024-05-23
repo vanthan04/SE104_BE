@@ -138,6 +138,7 @@ const updateReader = async (req, res) => {
             })
         }
 
+        const rule = await QuyDinh.findOne({});
         if (rule){
             if (calculateDate(ngaysinh) < 0 || calculateDate(ngaysinh) < rule.tuoitoithieu || calculateDate(ngaysinh) > rule.tuoitoida){
                 return res.status(400).json({
@@ -154,8 +155,8 @@ const updateReader = async (req, res) => {
                 }
             }
 
-            await updatereader.updateReader(rule.tuoitoithieu, rule.tuoitoida, rule.giatrithe)
         }
+
         const updatereader = await DocGia.findOneAndUpdate(
             {MaDG: MaDG},
             {
@@ -168,8 +169,9 @@ const updateReader = async (req, res) => {
             },
             {new: true}
         )
-        const rule = await QuyDinh.findOne({});
 
+        await updatereader.updateReader(rule.tuoitoithieu, rule.tuoitoida, rule.giatrithe)
+        
         const formattedtoUpdateNgaysinh = formatDatetoUpdate(ngaysinh);
         const formattedtoUpdateNgayLapThe = formatDatetoUpdate(ngaylapthe)
         const formattedtoShowNgaysinh = formatDatetoShow(ngaysinh);
