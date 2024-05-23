@@ -76,6 +76,20 @@ const createNewReader = async (req, res) => {
             }
         // Ngược lại ko có quy định
         } else {
+            if (calculateDate(ngaysinh) < 0 ){
+                return res.status(400).json({
+                    success: false,
+                    message: "Wrong age rule" // Sai quy định tuổi
+                });
+            } else {
+                // Kiểm tra hợp lệ của giá trị thẻ
+                if (calculateDate(ngaylapthe) <= 0) {
+                    return res.status(400).json({
+                        success: false,
+                        message: "Wrong card value rule" // Sai quy định giá trị thẻ
+                    })
+                }
+            }
             const newReader = await DocGia.create({
                 MaDG: newreaderID,
                 hoten: hoten,
