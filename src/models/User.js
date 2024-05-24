@@ -1,7 +1,7 @@
 const mongoose = require("mongoose")
 const bcrypt = require("bcrypt")
 
-var accountThuthuSchema = new mongoose.Schema(
+var UserSchema = new mongoose.Schema(
     {
         email:{
             type: String,
@@ -19,13 +19,19 @@ var accountThuthuSchema = new mongoose.Schema(
             type:String,
             default: null
         },
+        verified: {
+            type: Boolean
+        },
+        emailToken: {
+            type: String,
+        },
     },
     {
         timestamps: true
     } 
 )
 
-accountThuthuSchema.pre('save', async function(next) {
+UserSchema.pre('save', async function(next) {
     if (this.isModified('password')) {
         const salt = bcrypt.genSaltSync(10);
         this.password = await bcrypt.hash(this.password, salt);
@@ -33,9 +39,9 @@ accountThuthuSchema.pre('save', async function(next) {
     next();
 });
 
-accountThuthuSchema.methods = {
+UserSchema.methods = {
     isCorrectPassword: async function(password){
         return await bcrypt.compare(password, this.password);
     }
 }
-module.exports = mongoose.model("accountThuthu", accountThuthuSchema);
+module.exports = mongoose.model("User", UserSchema);

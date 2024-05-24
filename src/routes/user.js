@@ -3,6 +3,7 @@ const ctrls = require("../controllers/user");
 const { verifyAccessToken } = require("../middlewares/verifyToken");
 
 
-router.post('/loginAdmin', ctrls.loginAdmin)
+router.post('/login', ctrls.login)
+router.post('/register', ctrls.register)
 
 module.exports = router;
