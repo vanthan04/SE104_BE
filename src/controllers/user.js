@@ -144,7 +144,13 @@ const login = asyncHandler (async (req, res, next) => {
           message: info.message || "Authentication failed",
         });
       }
-
+      
+      if (!user.verified) {
+        return res.status(400).json({
+          success: false,
+          message: "Account is not verified, please verify email!"
+        });
+      }
       req.login(user, async (err) => {
         if (err) {
           // throw err;

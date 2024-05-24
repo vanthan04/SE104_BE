@@ -6,7 +6,7 @@ const {formatDatetoShow, formatDatetoUpdate} = require("../helps/fixDate")
 const createNewReader = async (req, res) => {
     try {
         const {hoten, email, loaidocgia, ngaysinh, diachi, ngaylapthe} = req.body;
-        console.log(req.body);
+        // console.log(req.body);
         // Kiểm tra validated dữ liệu
         if (!hoten || !ngaysinh || !diachi || !email || !loaidocgia || !ngaylapthe){
             return res.status(400).json({
@@ -59,16 +59,10 @@ const createNewReader = async (req, res) => {
                         loaidocgia: loaidocgia,
                         ngaylapthe: new Date(ngaylapthe)
                     });
-                    // NgaySinh = formatDatetoUpdate(newReader.ngaysinh);
-                    // NgayLapThe = formatDatetoUpdate(newReader.ngaylapthe);
+
                     return res.status(200).json({
                         success: true,
                         message: "Tạo mới độc giả thành công!",
-                        // data: {
-                        //     ...data,
-                        //     ngaysinh: NgaySinh,
-                        //     ngaylapthe: NgayLapThe
-                        // }
                     });
                 }   
             }
@@ -97,17 +91,10 @@ const createNewReader = async (req, res) => {
                 loaidocgia: loaidocgia,
                 ngaylapthe: new Date(ngaylapthe)
             });
-            // const {password, refreshToken, ...data} = newReader.toObject(); 
-            // NgaySinh = formatDatetoUpdate(newReader.ngaysinh);
-            // NgayLapThe = formatDatetoUpdate(newReader.ngaylapthe);
+
             return res.status(200).json({
                 success: true,
                 message: "Tạo mới độc giả thành công!",
-                // data: {
-                //     ...data,
-                //     ngaysinh: NgaySinh,
-                //     ngaylapthe: NgayLapThe
-                // }
             });
         }
     } catch (error) {
@@ -200,34 +187,30 @@ const updateReader = async (req, res) => {
 }
 const deleteReader = async (req, res) => {
     try {
-        const MaDG = req.query.MaDG;
+        const MaDG = req.body.MaDG;
         if (!MaDG) {
             return res.status(400).json({
                 success: false,
                 message: 'Chọn mã độc giả để xóa!'
             });
         }
-        // Cập nhật biến isDelete bằng true với độc giả bị xóa
-        const docgia = await DocGia.findOneAndUpdate(
-            {MaDG: MaDG},
-            {isDelete: true},
-            {new: true}
-        
-        );
-
-        if (!docgia || docgia.isDelete){
+        const docgia = await DocGia.findOne({MaDG: MaDG});
+        if (!docgia){
             return res.status(400).json({
                 success: false,
                 message: 'Không tìm thấy độc giả!'
             })
         }
+        
+        // Cập nhật biến isDelete bằng true với độc giả bị xóa
+        await DocGia.findOneAndDelete({ MaDG: MaDG });
 
         return res.status(200).json({
             success: true,
             message: 'Xóa độc giả thành công!'
         })
     } catch (error) {
-        console.log(error.message)
+        console.log(error.message);
         res.status(500).json({
             success: false,
             message: 'Internal Server Error!'
@@ -246,8 +229,7 @@ const getAllReaders = async (req, res) => {
                 data: []
             })
         } else {
-            const filteredReaders = allReaders.filter(reader => !reader.isDelete);
-            const formattedReaders = filteredReaders.map(reader => {
+            const formattedReaders = allReaders.map(reader => {
                 // Chuyển đổi ngày sinh từ đối tượng Date sang chuỗi có định dạng "DD-MM-YYYY"
                 const formattedtoUpdateNgaysinh = formatDatetoUpdate(reader.ngaysinh);
                 const formattedtoUpdateNgayLapThe = formatDatetoUpdate(reader.ngaylapthe)
@@ -290,7 +272,7 @@ const findReaderByMaDG = async (req, res) => {
             });
         }
         const reader = await DocGia.findOne({ MaDG: MaDG });
-        if (!reader || reader.isDelete) {
+        if (!reader) {
             return res.status(400).json({
                 success: false,
                 message: 'Không tìm thấy độc giả!',
@@ -332,7 +314,6 @@ const findReaderByFullname = async (req, res) => {
             });
         }
 
-        let count = 0;
         const allReaders = await DocGia.find({ hoten: hoten });
         if (!readers || readers.length === 0) {
             return res.status(400).json({
@@ -341,8 +322,7 @@ const findReaderByFullname = async (req, res) => {
                 data: []
             });
         } else {
-            const filteredReaders = allReaders.filter(reader => !reader.isDelete);
-            const formattedReaders = filteredReaders.map(reader => {
+            const formattedReaders = allReaders.map(reader => {
                 const formattedtoUpdateNgaysinh = formatDatetoUpdate(reader.ngaysinh);
                 const formattedtoUpdateNgayLapThe = formatDatetoUpdate(reader.ngaylapthe)
                 const formattedtoShowNgaysinh = formatDatetoShow(reader.ngaysinh);
@@ -356,14 +336,6 @@ const findReaderByFullname = async (req, res) => {
                 };
             });
             
-            //Kiểm tra số lượng độc giả đã xóa có bằng số lượng độc giả tìm thấy hay không
-            if (filteredReaders.length){
-                return res.status(400).json({
-                    success: false,
-                    message: 'Không tìm thấy độc giả!',
-                    data: []
-                });
-            }
             return res.status(200).json({
                 success: true,
                 data: formattedReaders
@@ -390,7 +362,7 @@ const findReaderByEmail = async (req, res) => {
         }
 
         const reader = await DocGia.findOne({ email: email });
-        if (!reader || reader.isDelete) {
+        if (!reader) {
             return res.status(400).json({
                 success: false,
                 message: 'Không tìm thấy độc giả!',
