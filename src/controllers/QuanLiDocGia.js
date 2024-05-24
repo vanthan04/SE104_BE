@@ -1,14 +1,14 @@
 const DocGia = require("../models/DocGia")
 const QuyDinh = require("../models/QuyDinh")
-const {calculateDate} = require("../helps/calculateTime")
-const {formatDatetoShow, formatDatetoUpdate} = require("../helps/fixDate")
+const { calculateDate } = require("../helps/calculateTime")
+const { formatDatetoShow, formatDatetoUpdate } = require("../helps/fixDate")
 
 const createNewReader = async (req, res) => {
     try {
-        const {hoten, email, loaidocgia, ngaysinh, diachi, ngaylapthe} = req.body;
+        const { hoten, email, loaidocgia, ngaysinh, diachi, ngaylapthe } = req.body;
         console.log(req.body);
         // Kiểm tra validated dữ liệu
-        if (!hoten || !ngaysinh || !diachi || !email || !loaidocgia || !ngaylapthe){
+        if (!hoten || !ngaysinh || !diachi || !email || !loaidocgia || !ngaylapthe) {
             return res.status(400).json({
                 success: false,
                 message: "Thiếu dữ liệu!"
@@ -16,8 +16,8 @@ const createNewReader = async (req, res) => {
         }
 
         // Kiểm tra email tồn tại hay chưa
-        const isExistEmail = await DocGia.findOne({email: email});
-        if (isExistEmail){
+        const isExistEmail = await DocGia.findOne({ email: email });
+        if (isExistEmail) {
             return res.status(400).json({
                 success: false,
                 message: "Email đã tồn tại!"
@@ -28,23 +28,23 @@ const createNewReader = async (req, res) => {
         const highestMaDGDoc = await DocGia.findOne({}).sort('-MaDG').exec();
         let highestMaDG = 0;
         if (highestMaDGDoc) {
-            highestMaDG = parseInt(highestMaDGDoc.MaDG.substr(2)); 
+            highestMaDG = parseInt(highestMaDGDoc.MaDG.substr(2));
         }
-        const newreaderID = 'DG' + String(highestMaDG + 1).padStart(5, '0'); 
+        const newreaderID = 'DG' + String(highestMaDG + 1).padStart(5, '0');
 
         // Kiểm tra dữ liệu gửi lên có thỏa quy định hay không
         const rule = await QuyDinh.findOne({});
         // Nếu có quy định 
-        if (rule !== null){
+        if (rule !== null) {
             //Kiểm tra hợp lệ của ngày sinh
-            if (calculateDate(ngaysinh) < 0 || calculateDate(ngaysinh) < rule.tuoitoithieu || calculateDate(ngaysinh) > rule.tuoitoida){
+            if (calculateDate(ngaysinh) < 0 || calculateDate(ngaysinh) < rule.tuoitoithieu || calculateDate(ngaysinh) > rule.tuoitoida) {
                 return res.status(400).json({
                     success: false,
                     message: "Sai quy định độ tuổi. Vui lòng xem quy định!" // Sai quy định tuổi
                 });
             } else {
                 // Kiểm tra hợp lệ của giá trị thẻ
-                if (calculateDate(ngaylapthe) <= 0 || calculateDate(ngaylapthe) > (rule.giatrithe/12) || calculateDate(ngaylapthe) < 0) {
+                if (calculateDate(ngaylapthe) <= 0 || calculateDate(ngaylapthe) > (rule.giatrithe / 12) || calculateDate(ngaylapthe) < 0) {
                     return res.status(400).json({
                         success: false,
                         message: "Sai quy định giá trị thẻ. Vui lòng xem quy định!" // Sai quy định giá trị thẻ
@@ -70,11 +70,11 @@ const createNewReader = async (req, res) => {
                         //     ngaylapthe: NgayLapThe
                         // }
                     });
-                }   
+                }
             }
-        // Ngược lại ko có quy định
+            // Ngược lại ko có quy định
         } else {
-            if (calculateDate(ngaysinh) < 0 ){
+            if (calculateDate(ngaysinh) < 0) {
                 return res.status(400).json({
                     success: false,
                     message: "Sai quy định giá trị thẻ. Vui lòng xem quy định!" // Sai quy định tuổi
@@ -122,16 +122,16 @@ const createNewReader = async (req, res) => {
 
 const updateReader = async (req, res) => {
     try {
-        const {MaDG, hoten, ngaysinh, diachi, email, loaidocgia, ngaylapthe} = req.body;
-        const reader = await DocGia.findOne({MaDG: MaDG});
-        if(!reader || reader.isDelete){
+        const { MaDG, hoten, ngaysinh, diachi, email, loaidocgia, ngaylapthe } = req.body;
+        const reader = await DocGia.findOne({ MaDG: MaDG });
+        if (!reader || reader.isDelete) {
             return res.status(400).json({
                 success: false,
                 message: `Không tìm thấy độc giả!`
             })
         }
 
-        if (hoten === reader.hoten && (new Date(ngaysinh)).getTime() === reader.ngaysinh.getTime() && diachi === reader.diachi && email === reader.email && loaidocgia === reader.loaidocgia && (new Date(ngaylapthe)).getTime() === reader.ngaylapthe.getTime()){
+        if (hoten === reader.hoten && (new Date(ngaysinh)).getTime() === reader.ngaysinh.getTime() && diachi === reader.diachi && email === reader.email && loaidocgia === reader.loaidocgia && (new Date(ngaylapthe)).getTime() === reader.ngaylapthe.getTime()) {
             return res.status(400).json({
                 success: false,
                 message: 'Không có sự thay đổi!'
@@ -139,15 +139,15 @@ const updateReader = async (req, res) => {
         }
 
         const rule = await QuyDinh.findOne({});
-        if (rule){
-            if (calculateDate(ngaysinh) < 0 || calculateDate(ngaysinh) < rule.tuoitoithieu || calculateDate(ngaysinh) > rule.tuoitoida){
+        if (rule) {
+            if (calculateDate(ngaysinh) < 0 || calculateDate(ngaysinh) < rule.tuoitoithieu || calculateDate(ngaysinh) > rule.tuoitoida) {
                 return res.status(400).json({
                     success: false,
                     message: "Sai quy định độ tuổi. Vui lòng xem quy định!" // Sai quy định tuổi
                 });
             } else {
                 // Kiểm tra hợp lệ của giá trị thẻ
-                if (calculateDate(ngaylapthe) <= 0 || calculateDate(ngaylapthe) > (rule.giatrithe/12) || calculateDate(ngaylapthe) < 0) {
+                if (calculateDate(ngaylapthe) <= 0 || calculateDate(ngaylapthe) > (rule.giatrithe / 12) || calculateDate(ngaylapthe) < 0) {
                     return res.status(400).json({
                         success: false,
                         message: "Sai quy định giá trị thẻ. Vui lòng xem quy định!" // Sai quy định giá trị thẻ
@@ -158,7 +158,7 @@ const updateReader = async (req, res) => {
         }
 
         const updatereader = await DocGia.findOneAndUpdate(
-            {MaDG: MaDG},
+            { MaDG: MaDG },
             {
                 hoten: hoten,
                 ngaysinh: new Date(ngaysinh),
@@ -167,7 +167,7 @@ const updateReader = async (req, res) => {
                 loaidocgia: loaidocgia,
                 ngaylapthe: new Date(ngaylapthe)
             },
-            {new: true}
+            { new: true }
         )
 
         await updatereader.updateReader(rule.tuoitoithieu, rule.tuoitoida, rule.giatrithe)
@@ -200,27 +200,29 @@ const updateReader = async (req, res) => {
 }
 const deleteReader = async (req, res) => {
     try {
-        const MaDG = req.query.MaDG;
+        const MaDG = req.body.MaDG;
+        console.log(MaDG)
         if (!MaDG) {
             return res.status(400).json({
                 success: false,
                 message: 'Chọn mã độc giả để xóa!'
             });
         }
-        // Cập nhật biến isDelete bằng true với độc giả bị xóa
-        const docgia = await DocGia.findOneAndUpdate(
-            {MaDG: MaDG},
-            {isDelete: true},
-            {new: true}
-        
-        );
-
-        if (!docgia || docgia.isDelete){
+        const docgia = await DocGia.findOne({ MaDG: MaDG });
+        console.log(docgia)
+        if (!docgia || docgia.isDelete) {
             return res.status(400).json({
                 success: false,
                 message: 'Không tìm thấy độc giả!'
             })
         }
+
+        // Cập nhật biến isDelete bằng true với độc giả bị xóa
+        await DocGia.findOneAndUpdate(
+            { MaDG: MaDG },
+            { isDelete: true },
+            { new: true }
+        );
 
         return res.status(200).json({
             success: true,
@@ -239,7 +241,7 @@ const getAllReaders = async (req, res) => {
     try {
         const allReaders = await DocGia.find({});
 
-        if (allReaders === null){
+        if (allReaders === null) {
             return res.status(400).json({
                 success: false,
                 message: 'Không có độc giả!',
@@ -305,7 +307,7 @@ const findReaderByMaDG = async (req, res) => {
                 success: true,
                 data: {
                     ...reader.toObject(),
-                    ngaysinhtoShow: formattedtoShowNgaysinh, 
+                    ngaysinhtoShow: formattedtoShowNgaysinh,
                     ngaylapthetoShow: formattedtoShowNgayLapThe,
                     ngaysinhtoUpdate: formattedtoUpdateNgaysinh,
                     ngaylapthetoUpdate: formattedtoUpdateNgayLapThe
@@ -347,17 +349,17 @@ const findReaderByFullname = async (req, res) => {
                 const formattedtoUpdateNgayLapThe = formatDatetoUpdate(reader.ngaylapthe)
                 const formattedtoShowNgaysinh = formatDatetoShow(reader.ngaysinh);
                 const formattedtoShowNgayLapThe = formatDatetoShow(reader.ngaylapthe);
-                return { 
+                return {
                     ...reader.toObject(),
-                    ngaysinhtoShow: formattedtoShowNgaysinh, 
+                    ngaysinhtoShow: formattedtoShowNgaysinh,
                     ngaylapthetoShow: formattedtoShowNgayLapThe,
                     ngaysinhtoUpdate: formattedtoUpdateNgaysinh,
                     ngaylapthetoUpdate: formattedtoUpdateNgayLapThe
                 };
             });
-            
+
             //Kiểm tra số lượng độc giả đã xóa có bằng số lượng độc giả tìm thấy hay không
-            if (filteredReaders.length){
+            if (filteredReaders.length) {
                 return res.status(400).json({
                     success: false,
                     message: 'Không tìm thấy độc giả!',
@@ -381,7 +383,7 @@ const findReaderByFullname = async (req, res) => {
 const findReaderByEmail = async (req, res) => {
     try {
         const email = req.query.email;
-        
+
         if (!email) {
             return res.status(400).json({
                 success: false,
@@ -405,7 +407,7 @@ const findReaderByEmail = async (req, res) => {
                 success: true,
                 data: {
                     ...reader.toObject(),
-                    ngaysinhtoShow: formattedtoShowNgaysinh, 
+                    ngaysinhtoShow: formattedtoShowNgaysinh,
                     ngaylapthetoShow: formattedtoShowNgayLapThe,
                     ngaysinhtoUpdate: formattedtoUpdateNgaysinh,
                     ngaylapthetoUpdate: formattedtoUpdateNgayLapThe
