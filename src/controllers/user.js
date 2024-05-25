@@ -182,7 +182,7 @@ const login = asyncHandler (async (req, res, next) => {
         return res.status(200).json({
           success: true,
           accessToken,
-          expiresAt: 60,
+          expiresAt: 30,
           data,
         });
       });
