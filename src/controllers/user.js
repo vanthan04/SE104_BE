@@ -4,7 +4,8 @@ const passport = require("passport");
 const { generateAccessToken, generateRefreshToken } = require("../middlewares/jwt");
 const User = require("../models/User");
 const crypto = require('crypto');
-const sendmail = require("../helps/sendEmail")
+const sendmail = require("../helps/sendEmail");
+const AccountAdmins = require("../models/accountAdmin")
 
 initializePassport(passport);
 
@@ -145,12 +146,12 @@ const login = asyncHandler (async (req, res, next) => {
         });
       }
       
-      if (!user.verified) {
-        return res.status(400).json({
-          success: false,
-          message: "Account is not verified, please verify email!"
-        });
-      }
+      // if (!user.verified) {
+      //   return res.status(400).json({
+      //     success: false,
+      //     message: "Account is not verified, please verify email!"
+      //   });
+      // }
       req.login(user, async (err) => {
         if (err) {
           // throw err;
@@ -169,6 +170,7 @@ const login = asyncHandler (async (req, res, next) => {
           user._id,
           { refreshToken: newRefreshToken },
           { new: true }
+
         );
 
         // Set refresh token in cookie
@@ -180,6 +182,7 @@ const login = asyncHandler (async (req, res, next) => {
         return res.status(200).json({
           success: true,
           accessToken,
+          expiresAt: 60,
           data,
         });
       });
