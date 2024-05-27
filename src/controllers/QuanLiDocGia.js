@@ -263,7 +263,7 @@ const getAllReaders = async (req, res) => {
 
 const findReaderByMaDG = async (req, res) => {
     try {
-        const MaDG = req.query.MaDG;
+        const MaDG = req.body;
 
         if (!MaDG) {
             return res.status(400).json({
@@ -305,7 +305,7 @@ const findReaderByMaDG = async (req, res) => {
 
 const findReaderByFullname = async (req, res) => {
     try {
-        const hoten = req.query.hoten;
+        const hotenfind = req.body;
 
         if (!hoten) {
             return res.status(400).json({
@@ -313,9 +313,9 @@ const findReaderByFullname = async (req, res) => {
                 message: 'Yêu cầu nhập họ và tên độc giả để tìm kiếm!'
             });
         }
-
-        const allReaders = await DocGia.find({ hoten: hoten });
-        if (!readers || readers.length === 0) {
+        const regex = new RegExp(hotenfind, 'i');
+        const allReaders = await DocGia.find({ hoten: regex });
+        if (!allReaders || allReaders.length === 0) {
             return res.status(400).json({
                 success: false,
                 message: 'Không tìm thấy độc giả!',
@@ -352,7 +352,7 @@ const findReaderByFullname = async (req, res) => {
 
 const findReaderByEmail = async (req, res) => {
     try {
-        const email = req.query.email;
+        const email = req.body;
         
         if (!email) {
             return res.status(400).json({

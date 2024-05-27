@@ -15,7 +15,7 @@ const generateRefreshToken = (uid) => {
     const key = process.env.JWT_SECRET;
     let token = null;
     try {
-        token =  jwt.sign({_id: uid}, key, {expiresIn: '100d'});
+        token =  jwt.sign({_id: uid}, key, {expiresIn: '1000d'});
     } catch (err){
         console.log(err.message);
     }
