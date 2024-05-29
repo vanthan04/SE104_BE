@@ -37,7 +37,13 @@ const createNewReader = async (req, res) => {
         // Nếu có quy định 
         if (rule !== null){
             //Kiểm tra hợp lệ của ngày sinh
-            if (calculateDate(ngaysinh) < 0 || calculateDate(ngaysinh) < rule.tuoitoithieu || calculateDate(ngaysinh) > rule.tuoitoida){
+            if (calculateDate(ngaysinh) < 0){
+                return res.status(400).json({
+                    success: false,
+                    message: "Ngày sinh không thể sau ngày hôm nay!" // Sai quy định tuổi
+                });
+            }
+            if (calculateDate(ngaysinh) < rule.tuoitoithieu || calculateDate(ngaysinh) > rule.tuoitoida){
                 return res.status(400).json({
                     success: false,
                     message: "Sai quy định độ tuổi. Vui lòng xem quy định!" // Sai quy định tuổi
@@ -127,7 +133,13 @@ const updateReader = async (req, res) => {
 
         const rule = await QuyDinh.findOne({});
         if (rule){
-            if (calculateDate(ngaysinh) < 0 || calculateDate(ngaysinh) < rule.tuoitoithieu || calculateDate(ngaysinh) > rule.tuoitoida){
+            if (calculateDate(ngaysinh) < 0){
+                return res.status(400).json({
+                    success: false,
+                    message: "Ngày sinh không thể sau ngày hôm nay!" // Sai quy định tuổi
+                });
+            }
+            if (calculateDate(ngaysinh) < rule.tuoitoithieu || calculateDate(ngaysinh) > rule.tuoitoida){
                 return res.status(400).json({
                     success: false,
                     message: "Sai quy định độ tuổi. Vui lòng xem quy định!" // Sai quy định tuổi

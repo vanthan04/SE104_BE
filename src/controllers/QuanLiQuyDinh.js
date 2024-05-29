@@ -7,7 +7,8 @@ const getReaderRule = async (req, res) => {
         if (!rule || (!rule.tuoitoithieu && !rule.tuoitoida && !rule.giatrithe)){
             return res.status(400).json({
                 success: false,
-                message: "Không có quy định!" 
+                message: "Không có quy định!" ,
+                data: {}
             }) 
         } else {
             const data = {tuoitoithieu: rule.tuoitoithieu, tuoitoida: rule.tuoitoida, giatrithe: rule.giatrithe}
@@ -89,7 +90,8 @@ const getBookRule = async (req, res) => {
         if (!rule){
             return res.status(400).json({
                 success: false,
-                message: "Không có quy định!"
+                message: "Không có quy định!",
+                data: {}
             }) 
         } else {
             const data = {theloai: rule.theloai, khoangcachxuatban: rule.khoangcachxuatban}
