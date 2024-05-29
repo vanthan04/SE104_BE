@@ -7,4 +7,5 @@ router.get("/verify-email", ctrls.verifyEmail);
 router.post('/login', ctrls.login);
 router.post('/register', ctrls.register);
 router.get('/get-refresh-token', ctrls.getRefreshToken);
+router.post("/reset-password", [verifyAccessToken], ctrls.resetPassword);
 module.exports = router;

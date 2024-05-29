@@ -307,7 +307,6 @@ const findReaderByMaDG = async (req, res) => {
 const findReaderByFullname = async (req, res) => {
     try {
         const hotenfind = req.query.hoten;
-        console.log(hotenfind)
         if (!hotenfind) {
             return res.status(400).json({
                 success: false,

@@ -27,16 +27,17 @@ const register = asyncHandler(async (req, res) => {
       message: "Missing inputs!",
     });
 
-  sendmail.sendmail(user.email,
-    "Verify your email",
-    `<h2>Hello ${user.fullname}! Thank you for registering on our website!</h2>
-          <h4>To activate your account, please <a href="http://${req.headers.host}/api/user/verify-email?token=${user.emailToken}">click here</a></h4>        
-    `);
+
 
   const findEmail = await User.findOne({ email });
 
   if (findEmail) throw new Error("Email đã tồn tại!");
   else {
+    sendmail.sendmail(user.email,
+      "Verify your email",
+      `<h2>Hello ${user.fullname}! Thank you for registering on our website!</h2>
+            <h4>To activate your account, please <a href="http://${req.headers.host}/api/user/verify-email?token=${user.emailToken}">click here</a></h4>        
+      `);
     const newUser = await user.save();
     return res.status(200).json({
       success: newUser ? true : false,
@@ -230,9 +231,42 @@ const getRefreshToken = async (req, res) => {
   }
   
 }
+
+const resetPassword = async (req, res) => {
+  const { _id } = req.user;
+
+  const { password, newpassword } = req.body;
+
+  if (!_id || !password || !newpassword) {
+    return res.status(400).json({
+      success: false,
+      message: "Missing inputs",
+    });
+  }
+
+  const user = await User.findById(_id);
+
+  if (user) {
+    if (await user.isCorrectPassword(password)) {
+      user.password = newpassword;
+      const response = await user.save();
+      return res.status(200).json({
+        success: true,
+        message: "Thay đổi mật khẩu thành công!",
+      });
+    } else {
+      return res.status(200).json({
+        success: false,
+        message: "Mật khẩu cũ chưa đúng!",
+      });
+    }
+  }
+};
+
 module.exports = {
   login,
   register,
   verifyEmail,
-  getRefreshToken
+  getRefreshToken,
+  resetPassword
 };
