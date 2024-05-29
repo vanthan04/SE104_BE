@@ -40,7 +40,7 @@ const createNewReader = async (req, res) => {
             if (calculateDate(ngaysinh) < 0){
                 return res.status(400).json({
                     success: false,
-                    message: "Ngày sinh không thể sau ngày hôm nay!" // Sai quy định tuổi
+                    message: "Ngày sinh không hợp lệ!" // Sai quy định tuổi
                 });
             }
             if (calculateDate(ngaysinh) < rule.tuoitoithieu || calculateDate(ngaysinh) > rule.tuoitoida){
@@ -49,8 +49,14 @@ const createNewReader = async (req, res) => {
                     message: "Sai quy định độ tuổi. Vui lòng xem quy định!" // Sai quy định tuổi
                 });
             } else {
+                if (calculateDate(ngaylapthe) <= 0){
+                    return res.status(400).json({
+                        success: false,
+                        message: "Ngày lập thẻ không hợp lệ!" // Sai quy định giá trị thẻ
+                    });
+                }
                 // Kiểm tra hợp lệ của giá trị thẻ
-                if (calculateDate(ngaylapthe) <= 0 || calculateDate(ngaylapthe) > (rule.giatrithe/12) || calculateDate(ngaylapthe) < 0) {
+                if (calculateDate(ngaylapthe) > (rule.giatrithe/12)) {
                     return res.status(400).json({
                         success: false,
                         message: "Sai quy định giá trị thẻ. Vui lòng xem quy định!" // Sai quy định giá trị thẻ
@@ -77,14 +83,14 @@ const createNewReader = async (req, res) => {
             if (calculateDate(ngaysinh) < 0 ){
                 return res.status(400).json({
                     success: false,
-                    message: "Sai quy định giá trị thẻ. Vui lòng xem quy định!" // Sai quy định tuổi
+                    message: "Ngày sinh không hợp lệ!" // Sai quy định tuổi
                 });
             } else {
                 // Kiểm tra hợp lệ của giá trị thẻ
                 if (calculateDate(ngaylapthe) <= 0) {
                     return res.status(400).json({
                         success: false,
-                        message: "Sai quy định giá trị thẻ. Vui lòng xem quy định!" // Sai quy định giá trị thẻ
+                        message: "Ngày lập thẻ không hợp lệ!" // Sai quy định giá trị thẻ
                     })
                 }
             }
@@ -136,7 +142,7 @@ const updateReader = async (req, res) => {
             if (calculateDate(ngaysinh) < 0){
                 return res.status(400).json({
                     success: false,
-                    message: "Ngày sinh không thể sau ngày hôm nay!" // Sai quy định tuổi
+                    message: "Ngày sinh không hợp lệ!" // Sai quy định tuổi
                 });
             }
             if (calculateDate(ngaysinh) < rule.tuoitoithieu || calculateDate(ngaysinh) > rule.tuoitoida){
@@ -146,12 +152,19 @@ const updateReader = async (req, res) => {
                 });
             } else {
                 // Kiểm tra hợp lệ của giá trị thẻ
-                if (calculateDate(ngaylapthe) <= 0 || calculateDate(ngaylapthe) > (rule.giatrithe/12) || calculateDate(ngaylapthe) < 0) {
-                    return res.status(400).json({
-                        success: false,
-                        message: "Sai quy định giá trị thẻ. Vui lòng xem quy định!" // Sai quy định giá trị thẻ
-                    });
-                }
+                    if (calculateDate(ngaylapthe) <= 0){
+                        return res.status(400).json({
+                            success: false,
+                            message: "Ngày lập thẻ không hợp lệ!" // Sai quy định giá trị thẻ
+                        });
+                    }
+                    // Kiểm tra hợp lệ của giá trị thẻ
+                    if (calculateDate(ngaylapthe) > (rule.giatrithe/12)) {
+                        return res.status(400).json({
+                            success: false,
+                            message: "Sai quy định giá trị thẻ. Vui lòng xem quy định!" // Sai quy định giá trị thẻ
+                        });
+                    }
             }
 
         }
