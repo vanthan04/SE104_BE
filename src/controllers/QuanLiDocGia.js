@@ -263,7 +263,7 @@ const getAllReaders = async (req, res) => {
 
 const findReaderByMaDG = async (req, res) => {
     try {
-        const MaDG = req.body;
+        const MaDG = req.query.MaDG;
 
         if (!MaDG) {
             return res.status(400).json({
@@ -285,6 +285,7 @@ const findReaderByMaDG = async (req, res) => {
             const formattedtoShowNgayLapThe = formatDatetoShow(reader.ngaylapthe);
             return res.status(200).json({
                 success: true,
+                message: 'Tìm thấy độc giả!',
                 data: {
                     ...reader.toObject(),
                     ngaysinhtoShow: formattedtoShowNgaysinh, 
@@ -305,9 +306,9 @@ const findReaderByMaDG = async (req, res) => {
 
 const findReaderByFullname = async (req, res) => {
     try {
-        const hotenfind = req.body;
-
-        if (!hoten) {
+        const hotenfind = req.query.hoten;
+        console.log(hotenfind)
+        if (!hotenfind) {
             return res.status(400).json({
                 success: false,
                 message: 'Yêu cầu nhập họ và tên độc giả để tìm kiếm!'
@@ -338,6 +339,7 @@ const findReaderByFullname = async (req, res) => {
             
             return res.status(200).json({
                 success: true,
+                message: 'Tìm thấy độc giả!',
                 data: formattedReaders
             });
         }
@@ -352,7 +354,7 @@ const findReaderByFullname = async (req, res) => {
 
 const findReaderByEmail = async (req, res) => {
     try {
-        const email = req.body;
+        const email = req.query.email;
         
         if (!email) {
             return res.status(400).json({
@@ -375,6 +377,7 @@ const findReaderByEmail = async (req, res) => {
             const formattedtoShowNgayLapThe = formatDatetoShow(reader.ngaylapthe);
             return res.status(200).json({
                 success: true,
+                message: 'Tìm thấy độc giả!',
                 data: {
                     ...reader.toObject(),
                     ngaysinhtoShow: formattedtoShowNgaysinh, 

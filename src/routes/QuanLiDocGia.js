@@ -8,6 +8,6 @@ router.post('/deleteReader', verifyAccessToken, ctrls.deleteReader)
 router.get('/getAllReaders', verifyAccessToken, ctrls.getAllReaders)
 router.get('/findReaderByMaDG', verifyAccessToken, ctrls.findReaderByMaDG)
 router.get('/findReaderByEmail', verifyAccessToken, ctrls.findReaderByEmail)
-router.get('/findReaderByFullname',verifyAccessToken, ctrls.findReaderByFullname)
+router.get('/findReaderByFullname', ctrls.findReaderByFullname)
 
 module.exports = router;

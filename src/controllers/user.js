@@ -1,3 +1,4 @@
+require("dotenv").config();
 const asyncHandler = require("express-async-handler");
 const initializePassport = require("../middlewares/passport");
 const passport = require("passport");
@@ -6,7 +7,7 @@ const User = require("../models/User");
 const crypto = require('crypto');
 const sendmail = require("../helps/sendEmail");
 const AccountAdmins = require("../models/accountAdmin")
-
+const jwt = require("jsonwebtoken")
 initializePassport(passport);
 
 const register = asyncHandler(async (req, res) => {
@@ -130,34 +131,34 @@ const verifyEmail = asyncHandler(async (req, res) => {
 
 
 const login = asyncHandler (async (req, res, next) => {
-  passport.authenticate("local-admin", async (err, user, info) => {
+  passport.authenticate("local", async (err, user, info) => {
     try {
       if (err) {
         // throw err;
         return res.status(400).json({
           success: false,
-          message: "Failed"
+          message: "Lỗi!"
         })
       }
       if (!user) {
         return res.status(400).json({
           success: false,
-          message: info.message || "Authentication failed",
+          message: info.message || "Lỗi xác thực người dùng!",
         });
       }
       
-      // if (!user.verified) {
-      //   return res.status(400).json({
-      //     success: false,
-      //     message: "Account is not verified, please verify email!"
-      //   });
-      // }
+      if (!user.verified) {
+        return res.status(400).json({
+          success: false,
+          message: "Tài khoản chưa được xác minh. Vui lòng xác minh email!"
+        });
+      }
       req.login(user, async (err) => {
         if (err) {
           // throw err;
           return res.status(400).json({
             success: false,
-            message: "Failed"
+            message: "Lỗi xác minh"
           })
         }
 
@@ -166,7 +167,7 @@ const login = asyncHandler (async (req, res, next) => {
         const newRefreshToken = generateRefreshToken(user._id);
         
         // Update refresh token in the database
-        const updatedUser = await AccountAdmins.findByIdAndUpdate(
+        const updatedUser = await User.findByIdAndUpdate(
           user._id,
           { refreshToken: newRefreshToken },
           { new: true }
@@ -192,8 +193,46 @@ const login = asyncHandler (async (req, res, next) => {
   })(req, res, next);
 });
 
+const getRefreshToken = async (req, res) => {
+  try {
+    const refreshtoken = req.cookies.refreshToken;
+    if (!refreshtoken){
+      return res.status(401).json({
+        success: false,
+        message: `Bạn cần phải xác thực!`
+      })
+    }
+    jwt.verify(refreshtoken, process.env.JWT_SECRET,(err,user)=>{
+      if(err) return res.status(401).json({
+          success: false,
+          message: 'Invalid access token!'
+      })
+      const accessToken = generateAccessToken(user._id);
+      const newRefreshToken = generateRefreshToken(user._id);
+
+      res.cookie("refreshToken", newRefreshToken, {
+        secure: false,
+        httpOnly: true,
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      }); 
+      return res.status(200).json({
+        success: true,
+        accessToken,
+        expiresAt: 30
+      })
+    })
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json({
+        success: false,
+        message: 'Internal Server Error!'
+    });
+  }
+  
+}
 module.exports = {
   login,
   register,
-  verifyEmail
+  verifyEmail,
+  getRefreshToken
 };
