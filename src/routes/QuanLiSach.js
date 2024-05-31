@@ -8,6 +8,6 @@ router.post('/deleteBook', verifyAccessToken, ctrls.deleteBook);
 router.get('/getAllBooks', verifyAccessToken, ctrls.getAllBooks);
 router.get('/findBookByName', verifyAccessToken, ctrls.findBookByName);
 router.get('/findBookByBookID', verifyAccessToken, ctrls.findBookByBookID);
-
+router.get('/findBookByGenre', verifyAccessToken, ctrls.findBookByGenre)
 
 module.exports = router;

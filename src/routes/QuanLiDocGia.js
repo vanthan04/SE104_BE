@@ -9,5 +9,6 @@ router.get('/getAllReaders', verifyAccessToken, ctrls.getAllReaders)
 router.get('/findReaderByMaDG', verifyAccessToken, ctrls.findReaderByMaDG)
 router.get('/findReaderByEmail', verifyAccessToken, ctrls.findReaderByEmail)
 router.get('/findReaderByFullname', ctrls.findReaderByFullname)
+router.get('/findReader', verifyAccessToken, ctrls.findReader)
 
 module.exports = router;

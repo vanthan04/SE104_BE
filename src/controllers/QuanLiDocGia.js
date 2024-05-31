@@ -123,7 +123,7 @@ const updateReader = async (req, res) => {
     try {
         const {MaDG, hoten, ngaysinh, diachi, email, loaidocgia, ngaylapthe} = req.body;
         const reader = await DocGia.findOne({MaDG: MaDG});
-        if(!reader || reader.isDelete){
+        if(!reader){
             return res.status(400).json({
                 success: false,
                 message: `Không tìm thấy độc giả!`
@@ -227,7 +227,6 @@ const deleteReader = async (req, res) => {
             })
         }
         
-        // Cập nhật biến isDelete bằng true với độc giả bị xóa
         await DocGia.findOneAndDelete({ MaDG: MaDG });
 
         return res.status(200).json({
@@ -419,6 +418,56 @@ const findReaderByEmail = async (req, res) => {
         });
     }
 };
+const findReader = async (req, res) => {
+    try {
+        const { MaDG, hoten, ngaysinh, diachi, email, loaidocgia, ngaylapthe } = req.body;
+        
+        // Build the search criteria object
+        let searchCriteria = {};
+        if (MaDG) searchCriteria.MaDG = MaDG;
+        if (hoten) searchCriteria.hoten = new RegExp(hoten, 'i');
+        if (ngaysinh) searchCriteria.ngaysinh = ngaysinh;
+        if (diachi) searchCriteria.diachi = new RegExp(diachi, 'i'); // Case-insensitive match
+        if (email) searchCriteria.email = new RegExp(email, 'i'); // Case-insensitive match
+        if (loaidocgia) searchCriteria.loaidocgia = loaidocgia;
+        if (ngaylapthe) searchCriteria.ngaylapthe = ngaylapthe;
+
+        // Find the reader(s) in the database
+        const allReaders = await DocGia.find(searchCriteria);
+
+        if (allReaders.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Không tìm thấy độc giả!"
+            });
+        }
+
+        const formattedReaders = allReaders.map(reader => {
+            const formattedtoUpdateNgaysinh = formatDatetoUpdate(reader.ngaysinh);
+            const formattedtoUpdateNgayLapThe = formatDatetoUpdate(reader.ngaylapthe)
+            const formattedtoShowNgaysinh = formatDatetoShow(reader.ngaysinh);
+            const formattedtoShowNgayLapThe = formatDatetoShow(reader.ngaylapthe);
+            return { 
+                ...reader.toObject(),
+                ngaysinhtoShow: formattedtoShowNgaysinh, 
+                ngaylapthetoShow: formattedtoShowNgayLapThe,
+                ngaysinhtoUpdate: formattedtoUpdateNgaysinh,
+                ngaylapthetoUpdate: formattedtoUpdateNgayLapThe
+            };
+        });
+        res.status(200).json({
+            success: true,
+            data: formattedReaders
+        });
+
+    } catch (error) {
+        console.log(error.message);
+        res.status(500).json({
+            success: false,
+            message: 'Internal Server Error!'
+        });
+    }
+}
 module.exports = {
     createNewReader,
     updateReader,
@@ -426,5 +475,6 @@ module.exports = {
     getAllReaders,
     findReaderByMaDG,
     findReaderByFullname,
-    findReaderByEmail
+    findReaderByEmail,
+    findReader
 }
