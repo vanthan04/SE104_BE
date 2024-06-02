@@ -35,6 +35,18 @@ const updateReaderRule = async (req, res) => {
                 message: 'Missing input!'
             })
         }
+        if (tuoitoithieu <= 0 || tuoitoida <= 0 || giatrithe <= 0 ){
+            return res.status(400).json({
+                success: false,
+                message: 'Vui lòng nhập số lớn hơn 0!'
+            })
+        }   
+        if (tuoitoithieu >= tuoitoida ) {
+            res.status(400).json({
+                success: false,
+                message: 'Tuổi tối thiểu không thể lớn hơn tuối tối đa!'
+            })
+        }
         const rule = await QuyDinh.findOne({});
         if (!rule){
             await QuyDinh.create({
@@ -64,7 +76,7 @@ const updateReaderRule = async (req, res) => {
                 )
                 const docgias = await DocGia.find({});
                 if (docgias !== null){
-                    for (const docgia of docgia) {
+                    for (const docgia of docgias) {
                         await docgia.updateReader(parseInt(tuoitoithieu), parseInt(tuoitoida), parseInt(giatrithe));
                     }
                 }

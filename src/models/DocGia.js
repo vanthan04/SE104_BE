@@ -33,6 +33,10 @@ var DocGiaSchema = new mongoose.Schema(
             type: Boolean,
             default: false
         },
+        reasonLocked: {
+            type: String,
+            default: null
+        },
         ngaylapthe:{
             type: Date,
             require: true,
@@ -52,10 +56,7 @@ DocGiaSchema.methods = {
     updateReader: async function(minAge, maxAge, cardValue){
         if (calculateDate(this.ngaysinh) < minAge || calculateDate(this.ngaysinh) > maxAge){
             this.isLocked = true;
-        } else {
-            this.isLocked = false;
-        }
-        if (calculateDate(this.ngaylapthe) > (cardValue/12) || calculateDate(this.ngaylapthe) < 0){
+        } else if (calculateDate(this.ngaylapthe) > (cardValue/12) || calculateDate(this.ngaylapthe) < 0){
             this.isLocked = true;
         } else {
             this.isLocked = false;

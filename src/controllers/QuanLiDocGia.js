@@ -121,7 +121,7 @@ const createNewReader = async (req, res) => {
 
 const updateReader = async (req, res) => {
     try {
-        const {MaDG, hoten, ngaysinh, diachi, email, loaidocgia, ngaylapthe} = req.body;
+        const {MaDG, hoten, ngaysinh, diachi, email, loaidocgia, ngaylapthe, isLocked} = req.body;
         const reader = await DocGia.findOne({MaDG: MaDG});
         if(!reader){
             return res.status(400).json({
@@ -177,7 +177,8 @@ const updateReader = async (req, res) => {
                 diachi: diachi,
                 email: email,
                 loaidocgia: loaidocgia,
-                ngaylapthe: new Date(ngaylapthe)
+                ngaylapthe: new Date(ngaylapthe),
+                isLocked: reader.isLocked
             },
             {new: true}
         )
