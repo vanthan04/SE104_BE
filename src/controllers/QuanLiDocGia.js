@@ -1,14 +1,14 @@
 const DocGia = require("../models/DocGia")
 const QuyDinh = require("../models/QuyDinh")
-const {calculateDate} = require("../helps/calculateTime")
-const {formatDatetoShow, formatDatetoUpdate} = require("../helps/fixDate")
+const { calculateDate } = require("../helps/calculateTime")
+const { formatDatetoShow, formatDatetoUpdate } = require("../helps/fixDate")
 
 const createNewReader = async (req, res) => {
     try {
         const {hoten, email, loaidocgia, ngaysinh, diachi, ngaylapthe} = req.body;
         // console.log(req.body);
         // Kiểm tra validated dữ liệu
-        if (!hoten || !ngaysinh || !diachi || !email || !loaidocgia || !ngaylapthe){
+        if (!hoten || !ngaysinh || !diachi || !email || !loaidocgia || !ngaylapthe) {
             return res.status(400).json({
                 success: false,
                 message: "Thiếu dữ liệu!"
@@ -16,8 +16,8 @@ const createNewReader = async (req, res) => {
         }
 
         // Kiểm tra email tồn tại hay chưa
-        const isExistEmail = await DocGia.findOne({email: email});
-        if (isExistEmail){
+        const isExistEmail = await DocGia.findOne({ email: email });
+        if (isExistEmail) {
             return res.status(400).json({
                 success: false,
                 message: "Email đã tồn tại!"
@@ -28,14 +28,14 @@ const createNewReader = async (req, res) => {
         const highestMaDGDoc = await DocGia.findOne({}).sort('-MaDG').exec();
         let highestMaDG = 0;
         if (highestMaDGDoc) {
-            highestMaDG = parseInt(highestMaDGDoc.MaDG.substr(2)); 
+            highestMaDG = parseInt(highestMaDGDoc.MaDG.substr(2));
         }
-        const newreaderID = 'DG' + String(highestMaDG + 1).padStart(5, '0'); 
+        const newreaderID = 'DG' + String(highestMaDG + 1).padStart(5, '0');
 
         // Kiểm tra dữ liệu gửi lên có thỏa quy định hay không
         const rule = await QuyDinh.findOne({});
         // Nếu có quy định 
-        if (rule !== null){
+        if (rule !== null) {
             //Kiểm tra hợp lệ của ngày sinh
             if (calculateDate(ngaysinh) < 0){
                 return res.status(400).json({
@@ -76,11 +76,11 @@ const createNewReader = async (req, res) => {
                         success: true,
                         message: "Tạo mới độc giả thành công!",
                     });
-                }   
+                }
             }
-        // Ngược lại ko có quy định
+            // Ngược lại ko có quy định
         } else {
-            if (calculateDate(ngaysinh) < 0 ){
+            if (calculateDate(ngaysinh) < 0) {
                 return res.status(400).json({
                     success: false,
                     message: "Ngày sinh không hợp lệ!" // Sai quy định tuổi
@@ -130,7 +130,7 @@ const updateReader = async (req, res) => {
             })
         }
 
-        if (hoten === reader.hoten && (new Date(ngaysinh)).getTime() === reader.ngaysinh.getTime() && diachi === reader.diachi && email === reader.email && loaidocgia === reader.loaidocgia && (new Date(ngaylapthe)).getTime() === reader.ngaylapthe.getTime()){
+        if (hoten === reader.hoten && (new Date(ngaysinh)).getTime() === reader.ngaysinh.getTime() && diachi === reader.diachi && email === reader.email && loaidocgia === reader.loaidocgia && (new Date(ngaylapthe)).getTime() === reader.ngaylapthe.getTime()) {
             return res.status(400).json({
                 success: false,
                 message: 'Không có sự thay đổi!'
@@ -170,7 +170,7 @@ const updateReader = async (req, res) => {
         }
 
         const updatereader = await DocGia.findOneAndUpdate(
-            {MaDG: MaDG},
+            { MaDG: MaDG },
             {
                 hoten: hoten,
                 ngaysinh: new Date(ngaysinh),
@@ -180,7 +180,7 @@ const updateReader = async (req, res) => {
                 ngaylapthe: new Date(ngaylapthe),
                 isLocked: reader.isLocked
             },
-            {new: true}
+            { new: true }
         )
 
         await updatereader.updateReader(rule.tuoitoithieu, rule.tuoitoida, rule.giatrithe)
@@ -247,7 +247,7 @@ const getAllReaders = async (req, res) => {
     try {
         const allReaders = await DocGia.find({});
 
-        if (allReaders === null){
+        if (allReaders === null) {
             return res.status(400).json({
                 success: false,
                 message: 'Không có độc giả!',
@@ -313,7 +313,7 @@ const findReaderByMaDG = async (req, res) => {
                 message: 'Tìm thấy độc giả!',
                 data: {
                     ...reader.toObject(),
-                    ngaysinhtoShow: formattedtoShowNgaysinh, 
+                    ngaysinhtoShow: formattedtoShowNgaysinh,
                     ngaylapthetoShow: formattedtoShowNgayLapThe,
                     ngaysinhtoUpdate: formattedtoUpdateNgaysinh,
                     ngaylapthetoUpdate: formattedtoUpdateNgayLapThe
@@ -352,9 +352,9 @@ const findReaderByFullname = async (req, res) => {
                 const formattedtoUpdateNgayLapThe = formatDatetoUpdate(reader.ngaylapthe)
                 const formattedtoShowNgaysinh = formatDatetoShow(reader.ngaysinh);
                 const formattedtoShowNgayLapThe = formatDatetoShow(reader.ngaylapthe);
-                return { 
+                return {
                     ...reader.toObject(),
-                    ngaysinhtoShow: formattedtoShowNgaysinh, 
+                    ngaysinhtoShow: formattedtoShowNgaysinh,
                     ngaylapthetoShow: formattedtoShowNgayLapThe,
                     ngaysinhtoUpdate: formattedtoUpdateNgaysinh,
                     ngaylapthetoUpdate: formattedtoUpdateNgayLapThe
@@ -379,7 +379,7 @@ const findReaderByFullname = async (req, res) => {
 const findReaderByEmail = async (req, res) => {
     try {
         const email = req.query.email;
-        
+
         if (!email) {
             return res.status(400).json({
                 success: false,
@@ -404,7 +404,7 @@ const findReaderByEmail = async (req, res) => {
                 message: 'Tìm thấy độc giả!',
                 data: {
                     ...reader.toObject(),
-                    ngaysinhtoShow: formattedtoShowNgaysinh, 
+                    ngaysinhtoShow: formattedtoShowNgaysinh,
                     ngaylapthetoShow: formattedtoShowNgayLapThe,
                     ngaysinhtoUpdate: formattedtoUpdateNgaysinh,
                     ngaylapthetoUpdate: formattedtoUpdateNgayLapThe
