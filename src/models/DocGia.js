@@ -54,12 +54,20 @@ var DocGiaSchema = new mongoose.Schema(
 
 DocGiaSchema.methods = {
     updateReader: async function(minAge, maxAge, cardValue){
-        if (calculateDate(this.ngaysinh) < minAge || calculateDate(this.ngaysinh) > maxAge){
+        if ((calculateDate(this.ngaysinh) < minAge || calculateDate(this.ngaysinh) > maxAge) && (calculateDate(this.ngaylapthe) > (cardValue/12) || calculateDate(this.ngaylapthe) < 0)){
             this.isLocked = true;
-        } else if (calculateDate(this.ngaylapthe) > (cardValue/12) || calculateDate(this.ngaylapthe) < 0){
+            this.reasonLocked = "Sai quy định ngày sinh và ngày lập thẻ!"
+        }
+        else if (calculateDate(this.ngaysinh) < minAge || calculateDate(this.ngaysinh) > maxAge){
             this.isLocked = true;
+            this.reasonLocked = "Sai quy định ngày sinh!"
+        } 
+        else if (calculateDate(this.ngaylapthe) > (cardValue/12) || calculateDate(this.ngaylapthe) < 0){
+            this.isLocked = true;
+            this.reasonLocked = "Sai quy định ngày lập thẻ!"
         } else {
             this.isLocked = false;
+            this.reasonLocked = null
         }
         await this.save();
     }
