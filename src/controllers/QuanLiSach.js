@@ -1,4 +1,4 @@
-const Rules = require("../models/QuyDinh")
+const QuyDinh = require("../models/QuyDinh")
 const {calculateDate} = require("../helps/calculateTime")
 const Book = require("../models/Sach")
 const TacGia = require("../models/TacGia")
@@ -15,7 +15,6 @@ const createNewBook = async (req, res) => {
                 message: 'Missing input!'
             })
         }
-
 
         if (calculateDate(ngaynhap) < 0){
             return res.status(400).json({
@@ -49,10 +48,7 @@ const createNewBook = async (req, res) => {
         const newBookID = 'MS' + String(highestMaSach + 1).padStart(5, '0'); 
 
         const parsedDStacgia = JSON.parse(tacgia);
-        console.log(parsedDStacgia)
-        // const cleanedString = parsedDStacgia.replace(/[\[\]]/g, '');
-        // const listTL = cleanedString.split(','); 
-        const listTL = parsedDStacgia.map(author =>  author.trim());
+        const listTL = parsedDStacgia.map(author => author.trim());
             
 
 
@@ -66,7 +62,7 @@ const createNewBook = async (req, res) => {
         }));
 
         // Lấy quy định
-        const rule = await Rules.findOne({});
+        const rule = await QuyDinh.findOne({});
         //Nếu có quy định
         if (rule !== null){
             const listTheLoai = rule.DStheloai;
@@ -156,7 +152,7 @@ const createNewBook = async (req, res) => {
 
 const updateBook = async (req, res) => {
     try {
-        const {MaSach, tensach, theloai, tacgia, namxuatban, nhaxuatban, ngaynhap, trigia} = req.body;
+        const {MaSach, tensach, theloai, tacgia, namxuatban, nhaxuatban, ngaynhap, gia} = req.body;
 
         const book = await Book.findOne({MaSach: MaSach});
         if(!book){
@@ -166,24 +162,38 @@ const updateBook = async (req, res) => {
             })
         }
 
-        if (tensach === book.tensach && theloai === book.theloai && tacgia === book.tacgia && namxuatban === book.namxuatban && nhaxuatban === book.nhaxuatban && (new Date(ngaynhap)).getTime() === book.ngaynhap.getTime() && trigia === book.trigia){
+        const parsedDStacgia = JSON.parse(tacgia);
+        const listTacGia = parsedDStacgia.map(author => author.trim());
+
+        const sortedlistTacGia = listTacGia.sort((a, b) => a.localeCompare(b));
+
+
+        const listdbTacGia = await book.getListTacGia();
+
+        const sortedlistdbTacGia = listdbTacGia.sort((a, b) => a.localeCompare(b));
+
+
+        const matched = JSON.stringify(sortedlistdbTacGia) === JSON.stringify(sortedlistTacGia);
+
+        if (tensach === book.tensach && theloai === book.theloai && matched && parseInt(namxuatban) === book.namxuatban && nhaxuatban === book.nhaxuatban && (new Date(ngaynhap)).getTime() === book.ngaynhap.getTime() && parseInt(gia) === book.gia){
             return res.status(400).json({
                 success: false,
                 message: 'Không có sự thay đổi!'
             })
         }
 
-        if (tentacgia !== book.tentacgia) await TacGia.findOneAndUpdate({tentacgia: tentacgia})
         const rule = await QuyDinh.findOne({});
         if (rule){
-            const listBooks = rule.DStheloai;
             if (calculateDate(ngaynhap) < 0){
                 return res.status(400).json({
                     success: false,
                     message: "Ngày nhập sách không hợp lệ!"
                 });
             }
-            if (!listBooks.includes(theloai)){
+            const listTheLoai = rule.DStheloai;
+            const transformedList = listTheLoai.map(item => item.tentheloai);
+
+            if (!transformedList.includes(theloai)){
                 return res.status(400).json({
                     success: false,
                     message: "Thể loại không nằm trong danh sách thể loại!"
@@ -192,16 +202,28 @@ const updateBook = async (req, res) => {
 
         }
 
+        // Kiểm tra và thêm tác  giả nếu chưa tồn tại
+        const tacgiaIds = await Promise.all(listTacGia.map(async (tentacgia) => {
+            // listdbTacGia.map((tentacgia1) => {
+            //     if (tentacgia === tentacgia1) return;
+            // })
+            let author = await TacGia.findOne({ tentacgia });
+            if (!author) {
+                author = await TacGia.create({ tentacgia });
+            }
+            return author._id;
+        }));
+
         const updatebook = await Book.findOneAndUpdate(
             {MaSach: MaSach},
             {
                 tensach: tensach,
                 theloai: theloai,
-                tacgia: tacgia,
+                tacgia: tacgiaIds,
                 namxuatban: namxuatban,
                 nhaxuatban: nhaxuatban,
                 ngaynhap: new Date(ngaynhap),
-                gia: trigia
+                gia: gia
             },
             {new: true}
         )
@@ -217,7 +239,7 @@ const updateBook = async (req, res) => {
             success: true,
             message: 'Cập nhật độc giả thành công!',
             data: {
-                ...updatereader.toObject(),
+                ...updatebook.toObject(),
                 ngaynhaptoShow: NgayNhaptoShow,
                 ngaynhaptoUpdate: NgayNhaptoUpdate
             }
@@ -233,7 +255,6 @@ const updateBook = async (req, res) => {
 
 const deleteBook = async (req, res) => {
     try {
-        
         const MaSach = req.query.MaSach;
 
         if (!MaSach) {
@@ -253,7 +274,7 @@ const deleteBook = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: 'Xóa sách thành công'
+            message: 'Xóa sách thành công!'
         })
     } catch (error) {
         console.log(error.message)
@@ -275,7 +296,7 @@ const getAllBooks = async (req, res) => {
             })
         } else {
             const formattedBooks = await Promise.all(allBooks.map(async (book) => {
-                const listtacgia = await book.getListTacGia();  // Sử dụng await để chờ kết quả của getListTacGia
+                const listtacgia = await book.getListTacGia();
                 const NgayNhaptoShow = formatDatetoShow(book.ngaynhap);
                 const ngaynhaptoUpdate = formatDatetoUpdate(book.ngaynhap);
                 return {
@@ -315,15 +336,21 @@ const findBookByName = async (req, res) => {
         if (!allBooks){
             return res.status(400).json({
                 success: false,
-                message: `Don't' find book!`
+                message: `Không tìm thấy sách!`
             })
         }
-        const formattedBook = allBooks.map(book => {
+        const formattedBook = await Promise.all(allBooks.map( async (book) => {
             const NgayNhaptoShow = formatDatetoShow(book.ngaynhap);
-            const ngaynhaptoUpdate = formatDatetoUpdate(book.ngaynhap)
-            return { ...book.toObject(), ngaynhaptoShow: NgayNhaptoShow, ngaynhaptoUpdate: ngaynhaptoUpdate};
+            const ngaynhaptoUpdate = formatDatetoUpdate(book.ngaynhap);
+            const listtg = await book.getListTacGia();
+            return {
+                 ...book.toObject(),
+                listTacGia: listtg, 
+                ngaynhaptoShow: NgayNhaptoShow, 
+                ngaynhaptoUpdate: ngaynhaptoUpdate
+            };
 
-        })
+        }))
 
         return res.status(200).json({
             success: true,
@@ -359,10 +386,16 @@ const findBookByBookID = async (req, res) => {
             })
         }
         const NgayNhaptoShow = formatDatetoShow(book.ngaynhap);
-        const ngaynhaptoUpdate = formatDatetoUpdate(book.ngaynhap)
+        const ngaynhaptoUpdate = formatDatetoUpdate(book.ngaynhap);
+        const listtg = await book.getListTacGia(); 
         return res.status(200).json({
             success: true,
-            data: { ...book.toObject(), ngaynhaptoShow: NgayNhaptoShow, ngaynhaptoUpdate: ngaynhaptoUpdate}
+            data: {
+                ...book.toObject(), 
+                listTacGia: listtg,
+                ngaynhaptoShow: NgayNhaptoShow, 
+                ngaynhaptoUpdate: ngaynhaptoUpdate
+            }
         })
 
     } catch (error) {
@@ -377,34 +410,41 @@ const findBookByBookID = async (req, res) => {
 const findBookByGenre = async (req, res) => {
     try {
         const theloai = req.query.theloai;
+        console.log(theloai)
         if (!theloai){
             return res.status(400).json({
                 success: false,
                 message: 'Yêu cầu chọn thể loại để tìm kiếm!'
             })
         }
-        const rule = await Rules.findOne({});
+        const rule = await QuyDinh.findOne({});
         if (!rule){
             return res.status(400).json({
                 success: false,
                 message: 'Không có danh sách thể loại!'
             })
         }
-        const listGenre = rule.DStheloai;
-        if (!listGenre.includes(theloai)){
+        const listTheLoai = rule.DStheloai;
+        const transformedList = listTheLoai.map(item => item.tentheloai);
+        if (!transformedList.includes(theloai)){
             return res.status(400).json({
                 success: false,
                 message: "Vui lòng chọn thể loại trong danh sách thể loại!"
             })
         } 
         const listBooks = await Book.find({theloai: theloai});
-        const formattedBook = listBooks.map(book => {
+        const formattedBook = await Promise.all(listBooks.map(async (book) => {
             const NgayNhaptoShow = formatDatetoShow(book.ngaynhap);
-            const ngaynhaptoUpdate = formatDatetoUpdate(book.ngaynhap)
-            return { ...book.toObject(), ngaynhaptoShow: NgayNhaptoShow, ngaynhaptoUpdate: ngaynhaptoUpdate};
+            const ngaynhaptoUpdate = formatDatetoUpdate(book.ngaynhap);
+            const listtg = await book.getListTacGia();
+            return { 
+                ...book.toObject(), 
+                listTacGia: listtg,
+                ngaynhaptoShow: NgayNhaptoShow, 
+                ngaynhaptoUpdate: ngaynhaptoUpdate
+            };
     
-        })
-    
+        }))
         return res.status(200).json({
             success: true,
             data: formattedBook

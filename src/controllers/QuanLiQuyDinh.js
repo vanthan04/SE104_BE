@@ -113,7 +113,8 @@ const getBookRule = async (req, res) => {
                 data: {}
             })
         } else {
-            const data = { theloai: rule.theloai, khoangcachxuatban: rule.khoangcachxuatban }
+            const listTheLoai = rule.DStheloai.map(theloai => theloai.tentheloai)
+            const data = { theloai: listTheLoai, khoangcachxuatban: rule.khoangcachxuatban }
             return res.status(200).json({
                 success: true,
                 data: data
@@ -141,7 +142,6 @@ const getGenres = async (req, res) => {
 
         // Lấy danh sách thể loại từ rule
         const genreNames = rule.DStheloai.map(item => item.tentheloai);
-        console.log(genreNames)
         // Trả về danh sách tên thể loại
         return res.status(200).json({
             success: true,
@@ -167,11 +167,10 @@ const updateGenre = async (req, res) => {
                 message: "Thiếu dữ liệu!"
             });
         }
-        const parsedDStheloai = JSON.parse(DSTheLoai);
-        const cleanedString = parsedDStheloai.replace(/[\[\]]/g, '');
-        const listTL = cleanedString.split(',');       
-        const DStheloai = listTL.map(tentheloai => ({ tentheloai }));
 
+        const parsedDStheloai = JSON.parse(DSTheLoai); 
+        const DStheloai = parsedDStheloai.map(theloai => theloai.trim());
+        
         // Kiểm tra nếu DStheloai rỗng
         if (!DStheloai.length) {
             return res.status(400).json({
@@ -187,12 +186,17 @@ const updateGenre = async (req, res) => {
                 message: "Không tìm thấy quy định!"
             });
         }
-        // Loại bỏ trường _id khỏi danh sách trong DB và sắp xếp
-        const dbDStheloai = rule.DStheloai.map(item => ({ tentheloai: item.tentheloai })).sort((a, b) => a.tentheloai.localeCompare(b.tentheloai));
+        // // Loại bỏ trường _id khỏi danh sách trong DB và sắp xếp
+        const dbDStheloai = rule.DStheloai.map(item => item.tentheloai).sort((a, b) => a.localeCompare(b));
 
-        // Sắp xếp danh sách thể loại gửi lên
-        const sortedDStheloai = DStheloai.sort((a, b) => a.tentheloai.localeCompare(b.tentheloai));
-        const matched = JSON.stringify(dbDStheloai) === JSON.stringify(sortedDStheloai);
+        const dbDStheloaiStrings = dbDStheloai.map(theloai => theloai.trim());
+
+        const sorteddbDStheloai = dbDStheloaiStrings.sort((a, b) => a.localeCompare(b));
+
+        const sortedDStheloai = DStheloai.sort((a, b) => a.localeCompare(b));
+
+        const matched = JSON.stringify(sorteddbDStheloai) === JSON.stringify(sortedDStheloai);
+
         if (matched) {
             return res.status(200).json({
                 success: true,
@@ -200,10 +204,11 @@ const updateGenre = async (req, res) => {
             });
         }
         else {
+            const DStheloaiObjects = sortedDStheloai.map(item => ({ tentheloai: item }));
             await QuyDinh.updateOne(
                 {},
                 {
-                    DStheloai: sortedDStheloai
+                    DStheloai: DStheloaiObjects
                 },
                 {new: true}
             )
