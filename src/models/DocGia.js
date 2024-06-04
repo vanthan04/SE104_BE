@@ -64,9 +64,10 @@ DocGiaSchema.methods = {
         } 
         else if (calculateDate(this.ngaylapthe) > (cardValue/12) || calculateDate(this.ngaylapthe) < 0){
             this.isLocked = true;
-            this.reasonLocked = "Thẻ đã hết hạn!"
+            this.reasonLocked = "Sai quy định ngày lập thẻ!"
         } else {
             this.isLocked = false;
+            this.reasonLocked = null
         }
         await this.save();
     }
