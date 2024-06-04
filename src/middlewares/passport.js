@@ -12,7 +12,7 @@ const initializePassport = (passport) => {
                     return done(null, false, { message: 'Tài khoản không tồn tại!' });
 
                 if (!await user.isCorrectPassword(password))
-                    return done(null, false, { message: 'Mật khẩu sai!' });
+                    return done(null, false, { message: 'Tài khoản hoặc mật khẩu chưa chính xác' });
 
                 return done(null, user);
             } catch (error) {

@@ -4,14 +4,14 @@ const QuyDinh = require("../models/QuyDinh")
 const getReaderRule = async (req, res) => {
     try {
         const rule = await QuyDinh.findOne({});
-        if (!rule || (!rule.tuoitoithieu && !rule.tuoitoida && !rule.giatrithe)){
+        if (!rule || (!rule.tuoitoithieu && !rule.tuoitoida && !rule.giatrithe)) {
             return res.status(400).json({
                 success: false,
-                message: "Không có quy định!" ,
+                message: "Không có quy định!",
                 data: {}
-            }) 
+            })
         } else {
-            const data = {tuoitoithieu: rule.tuoitoithieu, tuoitoida: rule.tuoitoida, giatrithe: rule.giatrithe}
+            const data = { tuoitoithieu: rule.tuoitoithieu, tuoitoida: rule.tuoitoida, giatrithe: rule.giatrithe }
             return res.status(200).json({
                 success: true,
                 data: data
@@ -28,42 +28,47 @@ const getReaderRule = async (req, res) => {
 
 const updateReaderRule = async (req, res) => {
     try {
-        const {tuoitoithieu, tuoitoida, giatrithe} = req.body;
-        if (!tuoitoithieu || !tuoitoida || !giatrithe){
+        const { tuoitoithieu, tuoitoida, giatrithe } = req.body;
+
+        if (!tuoitoithieu || !tuoitoida || !giatrithe) {
             return res.status(400).json({
                 success: false,
                 message: 'Missing input!'
-            })
+            });
         }
-        if (tuoitoithieu <= 0 || tuoitoida <= 0 || giatrithe <= 0 ){
+
+        if (tuoitoithieu <= 0 || tuoitoida <= 0 || giatrithe <= 0) {
             return res.status(400).json({
                 success: false,
                 message: 'Vui lòng nhập số lớn hơn 0!'
-            })
-        }   
-        if (tuoitoithieu >= tuoitoida ) {
-            res.status(400).json({
-                success: false,
-                message: 'Tuổi tối thiểu không thể lớn hơn tuối tối đa!'
-            })
+            });
         }
+
+        if (tuoitoithieu >= tuoitoida) {
+            return res.status(400).json({
+                success: false,
+                message: 'Tuổi tối thiểu không thể lớn hơn tuổi tối đa!'
+            });
+        }
+
         const rule = await QuyDinh.findOne({});
-        if (!rule){
+
+        if (!rule) {
             await QuyDinh.create({
                 tuoitoithieu: tuoitoithieu,
                 tuoitoida: tuoitoida,
                 giatrithe: giatrithe
-            })
+            });
             return res.status(200).json({
                 success: true,
                 message: "Cập nhật quy định thành công!"
-            })
-        }else{
-            if (tuoitoida && tuoitoithieu && giatrithe && parseInt(tuoitoithieu) === rule.tuoitoithieu && parseInt(tuoitoida) === rule.tuoitoida && parseInt(giatrithe) === rule.giatrithe){
+            });
+        } else {
+            if (parseInt(tuoitoithieu) === rule.tuoitoithieu && parseInt(tuoitoida) === rule.tuoitoida && parseInt(giatrithe) === rule.giatrithe) {
                 return res.status(400).json({
                     success: false,
                     message: "Không có sự thay đổi!"
-                })
+                });
             } else {
                 await QuyDinh.updateOne(
                     {},
@@ -72,10 +77,11 @@ const updateReaderRule = async (req, res) => {
                         tuoitoida: tuoitoida,
                         giatrithe: giatrithe
                     },
-                    {new: true}
-                )
+                    { new: true }
+                );
+
                 const docgias = await DocGia.find({});
-                if (docgias !== null){
+                if (docgias.length > 0) {
                     for (const docgia of docgias) {
                         await docgia.updateReader(parseInt(tuoitoithieu), parseInt(tuoitoida), parseInt(giatrithe));
                     }
@@ -84,7 +90,7 @@ const updateReaderRule = async (req, res) => {
                 return res.status(200).json({
                     success: true,
                     message: "Cập nhật quy định thành công!"
-                })
+                });
             }
         }
     } catch (error) {
@@ -92,21 +98,22 @@ const updateReaderRule = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: 'Internal Server Error!'
-        })
+        });
     }
 }
+
 
 const getBookRule = async (req, res) => {
     try {
         const rule = await QuyDinh.findOne({});
-        if (!rule){
+        if (!rule) {
             return res.status(400).json({
                 success: false,
                 message: "Không có quy định!",
                 data: {}
-            }) 
+            })
         } else {
-            const data = {theloai: rule.theloai, khoangcachxuatban: rule.khoangcachxuatban}
+            const data = { theloai: rule.theloai, khoangcachxuatban: rule.khoangcachxuatban }
             return res.status(200).json({
                 success: true,
                 data: data
@@ -121,36 +128,25 @@ const getBookRule = async (req, res) => {
     }
 }
 
-const addGenre = async (req, res) => {
+const getGenres = async (req, res) => {
     try {
-        const { tentheloai } = req.body;
-        if (!tentheloai) {
-            return res.status(400).json({
+        // Tìm kiếm rule trong cơ sở dữ liệu
+        const rule = await QuyDinh.findOne({});
+        if (!rule) {
+            return res.status(404).json({
                 success: false,
-                message: "Missing input!"
+                message: "Rule not found!"
             });
         }
-        let rule = await QuyDinh.findOne({});
-        if (!rule) {
-            // Nếu không có quy định tồn tại, tạo một quy định mới và thêm thể loại vào danh sách
-            rule = new QuyDinh({ DStheloai: [tentheloai] });
-        } else {
-            // Kiểm tra xem tên thể loại đã tồn tại trong danh sách hay chưa
-            const existedIndex = rule.DStheloai.findIndex(item => item === tentheloai);
-            if (existedIndex !== -1) {
-                return res.status(400).json({
-                    success: false,
-                    message: "Tên thể loại đã tồn tại trong danh sách!"
-                });
-            }
-            // Thêm tentheloai mới vào danh sách thể loại trong quy định
-            rule.DStheloai.push(tentheloai);
-        }
-        // Lưu lại quy định sau khi thêm thể loại mới
-        await rule.save();
+
+        // Lấy danh sách thể loại từ rule
+        const genreNames = rule.DStheloai.map(item => item.tentheloai);
+        console.log(genreNames)
+        // Trả về danh sách tên thể loại
         return res.status(200).json({
             success: true,
-            message: "Thêm thể loại thành công!"
+            data: genreNames,
+            message: "Lấy danh sách thể loại thành công!"
         });
     } catch (error) {
         console.log(error);
@@ -161,38 +157,62 @@ const addGenre = async (req, res) => {
     }
 }
 
-const deleteGenre = async (req, res) => {
+const updateGenre = async (req, res) => {
     try {
-        const { tentheloai } = req.body;
-        if (!tentheloai) {
+        const { DSTheLoai } = req.body;
+         // Kiểm tra nếu DSTheLoai không tồn tại hoặc là chuỗi rỗng hoặc là mảng rỗng
+        if (!DSTheLoai || DSTheLoai.trim() === `""` || DSTheLoai.trim() === `"[]"`) {
             return res.status(400).json({
                 success: false,
-                message: "Missing input!"
+                message: "Thiếu dữ liệu!"
             });
         }
+        const parsedDStheloai = JSON.parse(DSTheLoai);
+        const cleanedString = parsedDStheloai.replace(/[\[\]]/g, '');
+        const listTL = cleanedString.split(',');       
+        const DStheloai = listTL.map(tentheloai => ({ tentheloai }));
+
+        // Kiểm tra nếu DStheloai rỗng
+        if (!DStheloai.length) {
+            return res.status(400).json({
+                success: false,
+                message: "Thiếu dữ liệu!"
+            });
+        }
+
         const rule = await QuyDinh.findOne({});
-        if (!rule || !rule.DStheloai || rule.DStheloai.length === 0) {
-            return res.status(400).json({
+        if (!rule) {
+            return res.status(404).json({
                 success: false,
-                message: "Không có thể loại để xóa!"
+                message: "Không tìm thấy quy định!"
             });
         }
-        // Kiểm tra xem tentheloai có tồn tại trong danh sách thể loại không
-        const index = rule.DStheloai.indexOf(tentheloai);
-        if (index === -1) {
-            return res.status(400).json({
-                success: false,
-                message: "Tên thể loại không tồn tại!"
+        // Loại bỏ trường _id khỏi danh sách trong DB và sắp xếp
+        const dbDStheloai = rule.DStheloai.map(item => ({ tentheloai: item.tentheloai })).sort((a, b) => a.tentheloai.localeCompare(b.tentheloai));
+
+        // Sắp xếp danh sách thể loại gửi lên
+        const sortedDStheloai = DStheloai.sort((a, b) => a.tentheloai.localeCompare(b.tentheloai));
+        const matched = JSON.stringify(dbDStheloai) === JSON.stringify(sortedDStheloai);
+        if (matched) {
+            return res.status(200).json({
+                success: true,
+                message: "Danh sách thể loại giống nhau!"
             });
         }
-        // Xóa tentheloai khỏi danh sách thể loại
-        rule.DStheloai.splice(index, 1);
-        // Lưu lại quy định sau khi xóa thể loại
-        await rule.save();
-        return res.status(200).json({
-            success: true,
-            message: "Xóa thể loại thành công!"
-        });
+        else {
+            await QuyDinh.updateOne(
+                {},
+                {
+                    DStheloai: sortedDStheloai
+                },
+                {new: true}
+            )
+            return res.status(200).json({
+                success: true,
+                message: "Cập nhật thể loại thành công!"
+            })    
+        }
+        
     } catch (error) {
         console.log(error);
         return res.status(500).json({
@@ -204,18 +224,19 @@ const deleteGenre = async (req, res) => {
 
 
 
+
 const updatePulishYearDistance = async (req, res) => {
     try {
-        const {khoangcachxuatban} = req.body;
-        if (!khoangcachxuatban){
+        const { khoangcachxuatban } = req.body;
+        if (!khoangcachxuatban) {
             return res.status(400).json({
                 success: false,
                 message: 'Missing input!'
             })
         }
-        
+
         const rule = await QuyDinh.findOne({});
-        if (!rule){
+        if (!rule) {
             await QuyDinh.create({
                 khoangcachxuatban: khoangcachxuatban
             })
@@ -223,8 +244,8 @@ const updatePulishYearDistance = async (req, res) => {
                 success: true,
                 message: "Cập nhật quy định thành công!"
             })
-        }else{
-            if (khoangcachxuatban && parseInt(khoangcachxuatban) === rule.khoangcachxuatban){
+        } else {
+            if (khoangcachxuatban && parseInt(khoangcachxuatban) === rule.khoangcachxuatban) {
                 return res.status(400).json({
                     success: false,
                     message: "Không có sự thay đổi!"
@@ -235,10 +256,10 @@ const updatePulishYearDistance = async (req, res) => {
                     {
                         khoangcachxuatban: khoangcachxuatban
                     },
-                    {new: true}
+                    { new: true }
                 )
                 const docgias = await DocGia.find({});
-                if (docgias !== null){
+                if (docgias !== null) {
                     for (const docgia of docgia) {
                         await docgia.updateReader(parseInt(tuoitoithieu), parseInt(tuoitoida), parseInt(giatrithe));
                     }
@@ -263,7 +284,7 @@ const updatePulishYearDistance = async (req, res) => {
 
 const getBookBorrowReturnRule = async (req, res) => {
     try {
-        
+
     } catch (error) {
         console.log(error);
         return res.status(500).json({
@@ -275,7 +296,7 @@ const getBookBorrowReturnRule = async (req, res) => {
 
 const updateBookBorrowReturnRule = async (req, res) => {
     try {
-        
+
     } catch (error) {
         console.log(error);
         return res.status(500).json({
@@ -290,8 +311,8 @@ module.exports = {
     getReaderRule,
     updateReaderRule,
     getBookRule,
-    addGenre,
-    deleteGenre,
+    getGenres,
+    updateGenre,
     getBookBorrowReturnRule,
     updateBookBorrowReturnRule,
     updatePulishYearDistance,

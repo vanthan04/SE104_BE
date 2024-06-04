@@ -1,33 +1,27 @@
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
 
 const TacGiaSchema = new mongoose.Schema(
     {
-        tentacgia:{
+        tentacgia: {
             type: String
         }
     },
     {
         timestamps: true
     }
-)
+);
 
 TacGiaSchema.methods = {
-    KiemTraSoLuongTacGia: async function(){
+    KiemTraSoLuongTacGia: async function() {
         try {
-            await TacGiaSchema.distinct('tentacgia', (err, uniqueNames) => {
-                if (err) {
-                    console.error(err);
-                    return -1;
-                }
-                const count = uniqueNames.length;
-                return count;
-            });
+            const uniqueNames = await this.model('TacGia').distinct('tentacgia').exec();
+            const count = uniqueNames.length;
+            return count;
         } catch (error) {
-           console.log(error);
-           return -1;
+            console.error(error);
+            return -1;
         }
-        
     }
-}
+};
 
-module.exports = mongoose.model("TacGia", TacGiaSchema)
+module.exports = mongoose.model("TacGia", TacGiaSchema);
