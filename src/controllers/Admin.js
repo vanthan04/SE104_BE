@@ -1,10 +1,10 @@
-const AccountAdmin = require("../models/accountAdmin")
+const AccountAdmins = require("../models/accountAdmin")
 
 const CreateAccount = async (req, res) => {
     const {username, password} = req.params;
-    const user = await AccountAdmin.findOne({username: username});
+    const user = await AccountAdmins.findOne({username: username});
     if (!user){
-        const newAccount = new AccountAdmin({
+        const newAccount = new AccountAdmins({
             username,
             password
         })

@@ -13,13 +13,13 @@ const verifyAccessToken= asyncHandler ( async(req,res,next)=>{
             })
 
             req.user=decode
-            next()
+            next();
         })
     }
     else{
         return res.status(401).json({
             success: false,
-            message: 'Require authentication!'
+            message: 'Yêu cầu xác thực!'
         })
     }
 })
