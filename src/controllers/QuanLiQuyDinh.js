@@ -161,7 +161,7 @@ const updateGenre = async (req, res) => {
             });
         }
         const parsedDStheloai = JSON.parse(DSTheLoai);
-        const cleanedString = parsedDStheloai.replace(/[\[\]\s]/g, '');
+        const cleanedString = parsedDStheloai.replace(/[\[\]]/g, '');
         const listTL = cleanedString.split(',');       
         const DStheloai = listTL.map(tentheloai => ({ tentheloai }));
 

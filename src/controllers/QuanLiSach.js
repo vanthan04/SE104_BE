@@ -49,7 +49,12 @@ const createNewBook = async (req, res) => {
         const newBookID = 'MS' + String(highestMaSach + 1).padStart(5, '0'); 
 
         const parsedDStacgia = JSON.parse(tacgia);
-        const listTL = parsedDStacgia.split(','); 
+        console.log(parsedDStacgia)
+        // const cleanedString = parsedDStacgia.replace(/[\[\]]/g, '');
+        // const listTL = cleanedString.split(','); 
+        const listTL = parsedDStacgia.map(author =>  author.trim());
+            
+
 
         // Kiểm tra và thêm tác  giả nếu chưa tồn tại
         const tacgiaIds = await Promise.all(listTL.map(async (tentacgia) => {
@@ -269,14 +274,20 @@ const getAllBooks = async (req, res) => {
                 data: []
             })
         } else {
-            const formattedBook = allBooks.map(book => {
+            const formattedBooks = await Promise.all(allBooks.map(async (book) => {
+                const listtacgia = await book.getListTacGia();  // Sử dụng await để chờ kết quả của getListTacGia
                 const NgayNhaptoShow = formatDatetoShow(book.ngaynhap);
                 const ngaynhaptoUpdate = formatDatetoUpdate(book.ngaynhap);
-                return { ...book.toObject(), ngaynhaptoShow: NgayNhaptoShow, ngaynhaptoUpdate: ngaynhaptoUpdate};
-            });
+                return {
+                    ...book.toObject(),
+                    listtacgia: listtacgia,
+                    ngaynhaptoShow: NgayNhaptoShow,
+                    ngaynhaptoUpdate: ngaynhaptoUpdate
+                };
+            }));
             return res.status(200).json({
                 success: true,
-                data: formattedBook
+                data: formattedBooks
             })
         }
     } catch (error) {

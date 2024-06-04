@@ -57,6 +57,17 @@ SachSchema.methods = {
         } catch (error) {
             console.log(error)
         }
+    },
+    getListTacGia: async function(){
+        try {
+            const listacgia =  await Promise.all(this.tacgia.map(async (tacgiaid) => {
+                const tg = await TacGia.findById(tacgiaid);
+                return tg ? tg.tentacgia : null;
+            }))
+            return listacgia.filter(tentacgia => tentacgia !== null);
+        } catch (error) {
+            console.log(error)
+        }
     }
 }
 module.exports = mongoose.model("Sach", SachSchema);
