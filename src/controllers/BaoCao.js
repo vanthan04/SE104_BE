@@ -97,7 +97,6 @@ const BaoCaoThongKeTinhHinhMuonSachTheoThangVaTheLoai = async (req, res) => {
 };
 
 
-// Hàm lấy danh sách sách trả trễ
 const getLateReturnBooksReport = async (req, res) => {
     try {
         const { ngaybaocao } = req.body; // Giả sử ngày tháng năm được gửi từ client
@@ -111,16 +110,29 @@ const getLateReturnBooksReport = async (req, res) => {
 
         const parsedNgayTra = new Date(ngaybaocao);
 
-        const rule = await QuyDinh.findOne({})
+        const rule = await QuyDinh.findOne({});
+
         // Lấy danh sách các bản ghi TienNo có ngày trả bằng ngày được truyền vào
         const lateReturns = await TienNo.find({
             ngaytra: parsedNgayTra // Lọc các bản ghi có ngày trả bằng ngày được truyền vào
-        }).populate('ThongTinDocGia SachTra'); // Populate thông tin độc giả và sách
+        }).populate({
+            path: 'ThongTinDocGia',
+            select: 'MaDG hoten', // Chọn các trường của DocGia bạn muốn hiển thị
+        }).populate({
+            path: 'SachTra',
+            model: 'Sach',
+            select: 'MaSach tensach' // Chọn các trường của Sach bạn muốn hiển thị
+        });
 
-       // Tính số ngày mượn và số ngày trả trễ
-       let report = lateReturns.map(item => ({
-        NgayMuon:formatDatetoShow(new Date((new Date(item.ngaytraquydinh)).getTime() - rule.songaymuontoida * 24 * 60 * 60 * 1000)), // Ngày mượn sách
-        SoNgayTraTre: (item.ngaytra.getTime() - item.ngaytraquydinh.getTime()) / (1000 * 60 * 60 * 24) // Số ngày trả trễ
+
+        // Tính số ngày mượn và số ngày trả trễ
+        let report = lateReturns.map(item => ({
+            MaDG: item.ThongTinDocGia.MaDG,
+            hoten: item.ThongTinDocGia.hoten,
+            MaSach: item.SachTra.MaSach,
+            tensach: item.SachTra.tensach,
+            NgayMuon: formatDatetoShow(new Date((new Date(item.ngaytraquydinh)).getTime() - rule.songaymuontoida * 24 * 60 * 60 * 1000)), // Ngày mượn sách
+            SoNgayTraTre: (item.ngaytra.getTime() - item.ngaytraquydinh.getTime()) / (1000 * 60 * 60 * 24), // Số ngày trả trễ
         }));
 
         return res.status(200).json({
@@ -132,9 +144,11 @@ const getLateReturnBooksReport = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: 'Internal Server Error!'
-        })
+        });
     }
 };
+
+
 
 module.exports = {
     BaoCaoThongKeTinhHinhMuonSachTheoThangVaTheLoai,
