@@ -469,6 +469,31 @@ const findReader = async (req, res) => {
         });
     }
 }
+
+const getListReaders = async (req, res) => {
+    try {
+        const listReader = await DocGia.find({isLocked: false});
+        const formatReader = listReader.map(reader => {
+            return {
+                MaDG: reader.MaDG,
+                HoTen: reader.hoten,
+                NgayLapThe: formatDatetoShow(new Date(reader.ngaylapthe)),
+                TongNo: reader.tongno,
+
+            }
+        })
+        return res.status(200).json({
+            success: true,
+            data: formatReader
+        })
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal Server Error!'
+        })
+    }
+}
 module.exports = {
     createNewReader,
     updateReader,
@@ -477,5 +502,6 @@ module.exports = {
     findReaderByMaDG,
     findReaderByFullname,
     findReaderByEmail,
-    findReader
+    findReader,
+    getListReaders
 }

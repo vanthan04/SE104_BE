@@ -1,6 +1,9 @@
 const moment = require('moment');
 const Sach = require("../models/Sach")
-const MuonTraSach = require("../models/MuonTraSach")
+const MuonTraSach = require("../models/MuonTraSach");
+const QuyDinh = require('../models/QuyDinh');
+const TienNo = require("../models/TienNo");
+const { formatDatetoShow } = require('../helps/fixDate');
 
 // Hàm lấy tổng số sách theo thể loại
 const getTotalBooksByCategory = async () => {
@@ -94,8 +97,46 @@ const BaoCaoThongKeTinhHinhMuonSachTheoThangVaTheLoai = async (req, res) => {
 };
 
 
+// Hàm lấy danh sách sách trả trễ
+const getLateReturnBooksReport = async (req, res) => {
+    try {
+        const { ngaybaocao } = req.body; // Giả sử ngày tháng năm được gửi từ client
+        // Kiểm tra ngày tháng năm có hợp lệ không
+        if (!ngaybaocao) {
+            return res.status(400).json({
+                success: false,
+                message: 'Ngày tháng năm là bắt buộc!'
+            });
+        }
 
+        const parsedNgayTra = new Date(ngaybaocao);
+
+        const rule = await QuyDinh.findOne({})
+        // Lấy danh sách các bản ghi TienNo có ngày trả bằng ngày được truyền vào
+        const lateReturns = await TienNo.find({
+            ngaytra: parsedNgayTra // Lọc các bản ghi có ngày trả bằng ngày được truyền vào
+        }).populate('ThongTinDocGia SachTra'); // Populate thông tin độc giả và sách
+
+       // Tính số ngày mượn và số ngày trả trễ
+       let report = lateReturns.map(item => ({
+        NgayMuon:formatDatetoShow(new Date((new Date(item.ngaytraquydinh)).getTime() - rule.songaymuontoida * 24 * 60 * 60 * 1000)), // Ngày mượn sách
+        SoNgayTraTre: (item.ngaytra.getTime() - item.ngaytraquydinh.getTime()) / (1000 * 60 * 60 * 24) // Số ngày trả trễ
+        }));
+
+        return res.status(200).json({
+            success: true,
+            data: report
+        });
+    } catch (error) {
+        console.log(error.message);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal Server Error!'
+        })
+    }
+};
 
 module.exports = {
-    BaoCaoThongKeTinhHinhMuonSachTheoThangVaTheLoai
+    BaoCaoThongKeTinhHinhMuonSachTheoThangVaTheLoai,
+    getLateReturnBooksReport
 }
