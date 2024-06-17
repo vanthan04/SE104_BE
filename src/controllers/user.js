@@ -6,7 +6,6 @@ const { generateAccessToken, generateRefreshToken } = require("../middlewares/jw
 const User = require("../models/User");
 const crypto = require('crypto');
 const sendmail = require("../helps/sendEmail");
-const AccountAdmins = require("../models/accountAdmin")
 const jwt = require("jsonwebtoken")
 initializePassport(passport);
 

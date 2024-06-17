@@ -32,7 +32,6 @@ const createNewBook = async (req, res) => {
 
         //Kiểm tra xem số lượng tác giả có thỏa mãn hay không
         const soluongtacgia = await Sach.countDistinctTacGia();
-        console.log(soluongtacgia)
         if (soluongtacgia === -1 || soluongtacgia > 100){
             return res.status(400).json({
                 success: false,
