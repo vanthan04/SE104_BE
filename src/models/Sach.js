@@ -1,73 +1,74 @@
-const mongoose = require("mongoose")
-const TacGia = require("./TacGia")
+const mongoose = require("mongoose");
 
 const SachSchema = new mongoose.Schema(
     {
-        MaSach:{
+        MaSach: {
             type: String,
             required: true,
             unique: true
         },
-        tensach:{
+        tensach: {
             type: String,
             required: true
         },
-        theloai:{
+        theloai: {
             type: String,
             required: true,
         },
-        tacgia:[{
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Author',
+        tacgia: [{
+            type: String,
+            required: true
         }],
-        namxuatban:{
+        namxuatban: {
             type: Number,
             required: true,
         },
-        nhaxuatban:{
+        nhaxuatban: {
             type: String,
             required: true
         },
-        ngaynhap:{
+        ngaynhap: {
             type: Date,
             required: true
         },
-        tinhtrang:{
+        tinhtrang: {
             type: String,
-            enum: ["Còn Trống", "Đã mượn", "Mất"],
+            enum: ["Còn Trống", "Đã mượn", "Vi Phạm"],
             default: "Còn Trống"
         },
-        
-        gia:{
+        gia: {
             type: Number,
-            reuiqred: true
+            required: true
         }
     },
     {
         timestamps: true
     }
-)
-
+);
 
 SachSchema.methods = {
-    updateQuyDinh: async function(){
+    updateQuyDinh: async function() {
         try {
             
-
         } catch (error) {
-            console.log(error)
+            console.log(error);
         }
     },
-    getListTacGia: async function(){
-        try {
-            const listacgia =  await Promise.all(this.tacgia.map(async (tacgiaid) => {
-                const tg = await TacGia.findById(tacgiaid);
-                return tg ? tg.tentacgia : null;
-            }))
-            return listacgia.filter(tentacgia => tentacgia !== null);
-        } catch (error) {
-            console.log(error)
-        }
+};
+
+// Thêm phương thức tĩnh để đếm số lượng tên tác giả khác nhau
+SachSchema.statics.countDistinctTacGia = async function() {
+    try {
+        const distinctTacGia = await this.aggregate([
+            { $unwind: "$tacgia" },
+            { $group: { _id: "$tacgia" } }, // Thay vì "$tacgia.tentacgia"
+            { $count: "distinctCount" }
+        ]);
+        return distinctTacGia.length > 0 ? distinctTacGia[0].distinctCount : 0;
+    } catch (error) {
+        console.log(error);
+        return -1;
     }
-}
+};
+
 module.exports = mongoose.model("Sach", SachSchema);

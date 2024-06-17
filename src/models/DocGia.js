@@ -70,6 +70,12 @@ DocGiaSchema.methods = {
             this.reasonLocked = null
         }
         await this.save();
+    },
+    isCardExpired: function(cardValue) {
+        const currentDate = new Date();
+        const expiryDate = new Date(this.ngaylapthe);
+        expiryDate.setMonth(expiryDate.getMonth() + cardValue);
+        return currentDate > expiryDate;
     }
 }
 module.exports = mongoose.model("DocGia", DocGiaSchema);

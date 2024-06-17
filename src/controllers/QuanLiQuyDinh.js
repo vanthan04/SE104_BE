@@ -263,12 +263,6 @@ const updatePulishYearDistance = async (req, res) => {
                     },
                     { new: true }
                 )
-                const docgias = await DocGia.find({});
-                if (docgias !== null) {
-                    for (const docgia of docgia) {
-                        await docgia.updateReader(parseInt(tuoitoithieu), parseInt(tuoitoida), parseInt(giatrithe));
-                    }
-                }
 
                 return res.status(200).json({
                     success: true,
