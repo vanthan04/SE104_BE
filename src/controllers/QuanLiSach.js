@@ -330,7 +330,7 @@ const findBookByName = async (req, res) => {
             return {
                  ...book.toObject(),
                 ngaynhaptoShow: NgayNhaptoShow, 
-                ngaynhaptoUpdate: ngaynhaptoUpdate
+                // ngaynhaptoUpdate: ngaynhaptoUpdate
             };
 
         }))
