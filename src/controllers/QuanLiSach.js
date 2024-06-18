@@ -257,6 +257,12 @@ const deleteBook = async (req, res) => {
                 message: `Không tìm thấy sách trong danh sách!`
             })
         } 
+        if (sach.tinhtrang === "Đã mượn"){
+            return res.status(400).json({
+                success: false,
+                message: "Không thể xóa sách này vì dang có người mượn!"
+            })
+        }
         await Book.findOneAndDelete({MaSach: MaSach}) ;
 
         return res.status(200).json({

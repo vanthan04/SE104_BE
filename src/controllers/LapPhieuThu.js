@@ -15,6 +15,15 @@ const PhieuThuTienPhat = async (req, res) => {
             });
         }
 
+
+         // Kiểm tra ngày mượn có hợp lệ hay không
+         if (calculateDate(ngaythu) < 0) {
+             return res.status(400).json({
+                 success: false,
+                 message: "Ngày mượn sách không hợp lệ!" // Sai quy định ngày mượn
+             });
+         }
+
         // Kiểm tra xem độc giả có tồn tại không
         const docGia = await DocGia.findOne({MaDG: MaDG});
         if (!docGia) {
@@ -22,6 +31,12 @@ const PhieuThuTienPhat = async (req, res) => {
                 success: false,
                 message: 'Không tìm thấy độc giả!'
             });
+        }
+        if (tienthu > docGia.tongno){
+            return res.status(400).json({
+                success: false,
+                message: 'Tiền thu không thể lớn hơn tiền nợ!'
+            })
         }
 
         // Tạo phiếu thu mới
