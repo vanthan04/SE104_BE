@@ -28,6 +28,8 @@ const MuonSach = async (req, res) => {
             });
         }
 
+
+
         // Kiểm tra giá trị thẻ và hạn thẻ
         const giatrithe = rule.giatrithe;
         const isExpired = docGia.isCardExpired(giatrithe);
@@ -98,9 +100,8 @@ const MuonSach = async (req, res) => {
                 ngaytra: null // chưa trả
             });
 
-            // Cập nhật tình trạng sách và người mượn
-            sachTimDuoc.tinhtrang = 'Đã mượn';
-            sachTimDuoc.nguoimuon = docGia._id; // cập nhật người mượn
+            sachTimDuoc.tinhtrang = 'Đã mượn';     
+            sachTimDuoc.docgiamuon = docGia._id; // cập nhật người mượn
             await sachTimDuoc.save();
 
             ketQuaSach.push({
@@ -249,7 +250,7 @@ const TraSach = async (req, res) => {
 
                 // Cập nhật tình trạng sách
                 sachTimDuoc.tinhtrang = 'Còn Trống';
-                sachTimDuoc.nguoimuon = null; // cập nhật người mượn
+                sachTimDuoc.docgiamuon = null; // cập nhật người mượn
                 await sachTimDuoc.save();
 
                 ketQuaTraSach.push({
