@@ -21,7 +21,7 @@ const getTotalBooksByCategory = async () => {
 
 const BaoCaoThongKeTinhHinhMuonSachTheoThangVaTheLoai = async (req, res) => {
     try {
-        const { month, year } = req.body;
+        const { month, year } = req.query;
 
         // Kiểm tra tháng có hợp lệ không
         if (!month || !year) {
@@ -102,7 +102,7 @@ const BaoCaoThongKeTinhHinhMuonSachTheoThangVaTheLoai = async (req, res) => {
 
 const DownLoadDSMuonSachTheoThangVaTheLoai = async (req, res) => {
     try {
-        const { month, year } = req.body;
+        const { month, year } = req.query;
 
         // Kiểm tra tháng có hợp lệ không
         if (!month || !year) {
@@ -160,7 +160,7 @@ const DownLoadDSMuonSachTheoThangVaTheLoai = async (req, res) => {
                 tiLe: ((soLuotMuon / tongSoLuotMuon) * 100).toFixed(2) + '%'
             });
         }
-
+        
         // Thêm hàng tổng số lượt mượn
         thongKeTheoTheLoai.push({
             tenTheLoai: 'Tổng số lượt mượn',
@@ -168,18 +168,24 @@ const DownLoadDSMuonSachTheoThangVaTheLoai = async (req, res) => {
             tiLe: '100%'
         });
 
+
         // Tạo CSV từ kết quả thống kê với tiêu đề tiếng Việt
         const fields = [
             { label: 'Thể loại', value: 'tenTheLoai' },
             { label: 'Số lượt mượn', value: 'soLuotMuon' },
             { label: 'Tỉ lệ', value: 'tiLe' }
         ];
-        const csv = parse(thongKeTheoTheLoai, { fields });
+        const csv = parse(thongKeTheoTheLoai, { fields, withBOM: true });
 
-        // Gửi file CSV về phía client
-        res.header('Content-Type', 'text/csv');
-        res.attachment(`Báo cáo sách theo thể loại tháng ${month}/${year}.csv`);
+        // Chuẩn bị tên file
+        const fileName = `Báo cáo sách mượn tháng ${month}-${year}.csv`;
+
+        // Set headers for CSV download
+        res.header('Content-Type', 'text/csv; charset=utf-8');
+        // res.header('Content-Disposition', `attachment; filename="${encodeURIComponent(fileName)}"`);
+
         return res.status(200).send(csv);
+
 
     } catch (error) {
         console.log(error);
@@ -191,9 +197,10 @@ const DownLoadDSMuonSachTheoThangVaTheLoai = async (req, res) => {
 };
 
 
+
 const getLateReturnBooksReport = async (req, res) => {
     try {
-        const { ngaybaocao } = req.body; // Assume the date is sent from the client
+        const { ngaybaocao } = req.query; // Assume the date is sent from the client
         // Check if the date is valid
         if (!ngaybaocao) {
             return res.status(400).json({
@@ -255,7 +262,7 @@ const getLateReturnBooksReport = async (req, res) => {
 
 const DownLoadLateReturnBooksReport = async (req, res) => {
     try {
-        const { ngaybaocao } = req.body;
+        const { ngaybaocao } = req.query;
 
         // Validate the input date
         if (!ngaybaocao) {
@@ -313,7 +320,7 @@ const DownLoadLateReturnBooksReport = async (req, res) => {
 
         // Send CSV file to client
         res.header('Content-Type', 'text/csv');
-        res.attachment(`Báo cáo sách trả trễ ngày ${formattedNgayTra}.csv`);
+        // res.attachment(`Báo cáo sách trả trễ ngày ${formattedNgayTra}.csv`);
         return res.status(200).send(csv);
 
     } catch (error) {
