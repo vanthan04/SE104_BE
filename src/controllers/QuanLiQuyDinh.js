@@ -283,7 +283,24 @@ const updatePulishYearDistance = async (req, res) => {
 
 const getBookBorrowReturnRule = async (req, res) => {
     try {
-
+        const rule = await QuyDinh.findOne({});
+        if (!rule) {
+            return res.status(400).json({
+                success: false,
+                message: "Không có quy định!",
+                data: {}
+            })
+        } else {
+            const data = {
+                songaymuontoida: rule.songaymuontoida,
+                soluongsachmuontoida: rule.soluongsachmuontoida,
+                tienphatmoingay: rule.tienphatmoingay
+            }
+            return res.status(200).json({
+                success: true,
+                data: data
+            })
+        }
     } catch (error) {
         console.log(error);
         return res.status(500).json({
@@ -295,6 +312,48 @@ const getBookBorrowReturnRule = async (req, res) => {
 
 const updateBookBorrowReturnRule = async (req, res) => {
     try {
+        const { songaymuontoida, sosachmuontoida, tienphatmoingay } = req.body;
+        if (!songaymuontoida || !sosachmuontoida || !tienphatmoingay) {
+            return res.status(400).json({
+                success: false,
+                message: 'Thiếu dữ liệu truyền lên!'
+            })
+        }
+
+        const rule = await QuyDinh.findOne({});
+        if (!rule) {
+            await QuyDinh.create({
+                songaymuontoida: songaymuontoida,
+                soluongsachmuontoida: sosachmuontoida,
+                tienphatmoingay: tienphatmoingay
+            })
+            return res.status(200).json({
+                success: true,
+                message: "Cập nhật quy định thành công!"
+            })
+        } else {
+            if (parseInt(songaymuontoida) === rule.songaymuontoida && parseInt(sosachmuontoida) === rule.soluongsachmuontoida && parseInt(tienphatmoingay) === rule.tienphatmoingay) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Không có sự thay đổi!"
+                })
+            } else {
+                await QuyDinh.updateOne(
+                    {},
+                    {
+                        songaymuontoida: songaymuontoida,
+                        soluongsachmuontoida: sosachmuontoida,
+                        tienphatmoingay: tienphatmoingay
+                    },
+                    { new: true }
+                )
+
+                return res.status(200).json({
+                    success: true,
+                    message: "Cập nhật quy định thành công!"
+                })
+            }
+        }
 
     } catch (error) {
         console.log(error);
