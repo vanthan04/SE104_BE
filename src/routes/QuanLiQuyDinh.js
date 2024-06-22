@@ -9,6 +9,8 @@ router.get('/getBookRule', ctrls.getBookRule);
 router.put('/updatePulishYearDistance', ctrls.updatePulishYearDistance)
 router.put('/updateGenre',  ctrls.updateGenre)
 router.get('/getGenres',  ctrls.getGenres)
+router.get('/get-book-borrow-return-rule', ctrls.getBookBorrowReturnRule)
+router.put('/update-book-borrow-return-rule', ctrls.updateBookBorrowReturnRule)
 
 
 module.exports = router; 
