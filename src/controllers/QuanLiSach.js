@@ -3,6 +3,7 @@ const {calculateDate} = require("../helps/calculateTime")
 const Book = require("../models/Sach")
 const { formatDatetoUpdate, formatDatetoShow } = require("../helps/fixDate")
 const Sach = require("../models/Sach")
+const MuonTraSach = require("../models/MuonTraSach")
 
 const createNewBook = async (req, res) => {
     const {tensach, theloai, tacgia, namxuatban, nhaxuatban, ngaynhap, trigia} = req.body;
@@ -240,6 +241,9 @@ const createNewBook = async (req, res) => {
 //     }
 // }
 
+
+
+
 const deleteBook = async (req, res) => {
     try {
         const MaSach = req.query.MaSach;
@@ -260,7 +264,7 @@ const deleteBook = async (req, res) => {
         if (sach.tinhtrang === "Đã mượn"){
             return res.status(400).json({
                 success: false,
-                message: "Không thể xóa sách này vì dang có người mượn!"
+                message: "Không thể xóa sách này vì đang có người mượn!"
             })
         }
         await Book.findOneAndDelete({MaSach: MaSach}) ;
@@ -281,35 +285,52 @@ const deleteBook = async (req, res) => {
 const getAllBooks = async (req, res) => {
     try {
         const allBooks = await Book.find({});
-        if (!allBooks){
+        if (!allBooks || allBooks.length === 0){
             return res.status(400).json({
                 success: false,
                 message: 'Không có sách nào!',
                 data: []
-            })
-        } else {
-            const formattedBooks = await Promise.all(allBooks.map(async (book) => {
-                const NgayNhaptoShow = formatDatetoShow(book.ngaynhap);
-                // const ngaynhaptoUpdate = formatDatetoUpdate(book.ngaynhap);
-                return {
-                    ...book.toObject(),
-                    ngaynhaptoShow: NgayNhaptoShow,
-                    // ngaynhaptoUpdate: ngaynhaptoUpdate
-                };
-            }));
-            return res.status(200).json({
-                success: true,
-                data: formattedBooks
-            })
+            });
         }
+
+        const formattedBooks = await Promise.all(allBooks.map(async (book) => {
+            const NgayNhaptoShow = formatDatetoShow(book.ngaynhap);
+
+            // Tìm bản ghi MuonTraSach có sách này và tình trạng là "mượn"
+            let borrowerInfo = null;
+            if (book.tinhtrang === 'mượn') {
+                const muonTraSachRecord = await MuonTraSach.findOne({ 'DanhSachMuon.sachmuon': book._id}).populate('ThongtinDocGia');
+                if (muonTraSachRecord) {
+                    borrowerInfo = {
+                        MaDocGia: muonTraSachRecord.ThongtinDocGia.MaDG,
+                        HoTenDocGia: muonTraSachRecord.ThongtinDocGia.hoten,
+                        Email: muonTraSachRecord.ThongtinDocGia.email,
+                        NgaySinh: formatDatetoShow(muonTraSachRecord.ThongtinDocGia.ngaysinh),
+                        LoaiDocGia: muonTraSachRecord.ThongtinDocGia.loaidocgia
+                    };
+                }
+            }
+
+            return {
+                ...book.toObject(),
+                ngaynhaptoShow: NgayNhaptoShow,
+                borrowerInfo: borrowerInfo
+            };
+        }));
+
+        return res.status(200).json({
+            success: true,
+            data: formattedBooks
+        });
     } catch (error) {
         console.log(error.message);
         return res.status(500).json({
             success: false,
             message: 'Internal Server Error!'
-        })
+        });
     }
 }
+
 
 const findBookByName = async (req, res) => {
     try {

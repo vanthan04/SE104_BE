@@ -1,5 +1,6 @@
 const DocGia = require("../models/DocGia")
 const QuyDinh = require("../models/QuyDinh")
+const MuonTraSach = require("../models/MuonTraSach");
 const { calculateDate } = require("../helps/calculateTime")
 const { formatDatetoShow, formatDatetoUpdate } = require("../helps/fixDate")
 
@@ -227,7 +228,13 @@ const deleteReader = async (req, res) => {
                 message: 'Không tìm thấy độc giả!'
             })
         }
-        
+        const docgiaDaMuonSach = await MuonTraSach.findOne({ThongtinDocGia: docgia._id});
+        if (docgiaDaMuonSach){
+            return res.status(400).json({
+                success: false,
+                message: 'Không thể xóa độc giả vì độc giả đang mượn sách!'
+            })
+        }
         await DocGia.findOneAndDelete({ MaDG: MaDG });
 
         return res.status(200).json({

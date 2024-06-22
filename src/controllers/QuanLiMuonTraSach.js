@@ -318,6 +318,7 @@ const TraSach = async (req, res) => {
 const getListBookBorrowReturnByReaderID = async (req, res) => {
     try {
         const readerID = req.query.MaDG;
+
         // Kiểm tra readerID có hợp lệ không
         if (!readerID) {
             return res.status(400).json({
@@ -327,13 +328,14 @@ const getListBookBorrowReturnByReaderID = async (req, res) => {
         }
 
         // Tìm độc giả
-        let docGia = await DocGia.findOne({MaDG: readerID});
+        let docGia = await DocGia.findOne({ MaDG: readerID });
         if (!docGia) {
             return res.status(404).json({
                 success: false,
                 message: 'Độc giả không tồn tại!'
             });
         }
+
         // Lấy danh sách sách mượn và trả của độc giả
         let muonTraSach = await MuonTraSach.find({ ThongtinDocGia: docGia._id }).populate('DanhSachMuon.sachmuon');
 
@@ -345,11 +347,15 @@ const getListBookBorrowReturnByReaderID = async (req, res) => {
                 const soNgayMuon = Math.ceil((ngayTra - ngayMuon) / (1000 * 60 * 60 * 24));
 
                 // Tìm thông tin tiền phạt cho sách này
-                let sachPhat = await TienNo.findOne({'ThongTinDocGia': docGia._id, 'SachTra': sach.sachmuon });
+                let sachPhat = await TienNo.findOne({ 'ThongTinDocGia': docGia._id, 'SachTra': sach.sachmuon });
                 const tienPhat = sachPhat ? sachPhat.tienno : 0;
 
+                // Populate thêm thông tin tên sách
+                let thongTinSach = await Sach.findById(sach.sachmuon).select('MaSach tensach');
+
                 return {
-                    MaSach: sach.sachmuon.MaSach,
+                    MaSach: thongTinSach.MaSach,
+                    TenSach: thongTinSach.tensach,
                     NgayMuon: formatDatetoShow(ngayMuon),
                     NgayTra: formatDatetoShow(ngayTra),
                     SoNgayMuon: soNgayMuon,
