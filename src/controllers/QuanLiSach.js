@@ -4,6 +4,7 @@ const Book = require("../models/Sach")
 const { formatDatetoUpdate, formatDatetoShow } = require("../helps/fixDate")
 const Sach = require("../models/Sach")
 const MuonTraSach = require("../models/MuonTraSach")
+const DocGia = require("../models/DocGia")
 
 const createNewBook = async (req, res) => {
     const {tensach, theloai, tacgia, namxuatban, nhaxuatban, ngaynhap, trigia} = req.body;
@@ -285,7 +286,7 @@ const deleteBook = async (req, res) => {
 const getAllBooks = async (req, res) => {
     try {
         const allBooks = await Book.find({});
-        if (!allBooks || allBooks.length === 0){
+        if (!allBooks || allBooks.length === 0) {
             return res.status(400).json({
                 success: false,
                 message: 'Không có sách nào!',
@@ -296,18 +297,19 @@ const getAllBooks = async (req, res) => {
         const formattedBooks = await Promise.all(allBooks.map(async (book) => {
             const NgayNhaptoShow = formatDatetoShow(book.ngaynhap);
 
-            // Tìm bản ghi MuonTraSach có sách này và tình trạng là "mượn"
+            // Tìm bản ghi MuonTraSach có sách này trong mảng DanhSachMuon.sachmuon
             let borrowerInfo = null;
-            if (book.tinhtrang === 'mượn') {
-                const muonTraSachRecord = await MuonTraSach.findOne({ 'DanhSachMuon.sachmuon': book._id}).populate('ThongtinDocGia');
-                if (muonTraSachRecord) {
-                    borrowerInfo = {
-                        MaDocGia: muonTraSachRecord.ThongtinDocGia.MaDG,
-                        HoTenDocGia: muonTraSachRecord.ThongtinDocGia.hoten,
-                        Email: muonTraSachRecord.ThongtinDocGia.email,
-                        NgaySinh: formatDatetoShow(muonTraSachRecord.ThongtinDocGia.ngaysinh),
-                        LoaiDocGia: muonTraSachRecord.ThongtinDocGia.loaidocgia
-                    };
+            if (book.tinhtrang === 'Đã mượn') {
+                const nguoimuon = await DocGia.findById(book.docgiamuon)
+
+                if (nguoimuon) {
+                        borrowerInfo = {
+                            MaDocGia: nguoimuon.MaDG,
+                            HoTenDocGia: nguoimuon.hoten,
+                            Email: nguoimuon.email,
+                            NgaySinh: formatDatetoShow(nguoimuon.ngaysinh),
+                            LoaiDocGia: nguoimuon.loaidocgia
+                    }
                 }
             }
 
@@ -329,7 +331,8 @@ const getAllBooks = async (req, res) => {
             message: 'Internal Server Error!'
         });
     }
-}
+};
+
 
 
 const findBookByName = async (req, res) => {

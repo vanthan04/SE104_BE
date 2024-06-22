@@ -15,7 +15,7 @@ const MuonSach = async (req, res) => {
         if (calculateDate(NgayMuon) < 0) {
             return res.status(400).json({
                 success: false,
-                message: "Ngày mượn sách không hợp lệ!" // Sai quy định ngày mượn
+                message: "Ngày mượn sách không hợp lệ!"
             });
         }
 
@@ -98,8 +98,9 @@ const MuonSach = async (req, res) => {
                 ngaytra: null // chưa trả
             });
 
-            // Cập nhật tình trạng sách
+            // Cập nhật tình trạng sách và người mượn
             sachTimDuoc.tinhtrang = 'Đã mượn';
+            sachTimDuoc.nguoimuon = docGia._id; // cập nhật người mượn
             await sachTimDuoc.save();
 
             ketQuaSach.push({
@@ -149,6 +150,7 @@ const MuonSach = async (req, res) => {
         });
     }
 };
+
 
 
 
@@ -247,6 +249,7 @@ const TraSach = async (req, res) => {
 
                 // Cập nhật tình trạng sách
                 sachTimDuoc.tinhtrang = 'Còn Trống';
+                sachTimDuoc.nguoimuon = null; // cập nhật người mượn
                 await sachTimDuoc.save();
 
                 ketQuaTraSach.push({

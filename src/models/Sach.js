@@ -36,6 +36,11 @@ const SachSchema = new mongoose.Schema(
             enum: ["Còn Trống", "Đã mượn", "Vi Phạm"],
             default: "Còn Trống"
         },
+        docgiamuon: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'DocGia',
+            default: null
+        },
         gia: {
             type: Number,
             required: true
