@@ -343,8 +343,11 @@ const getListBookBorrowReturnByReaderID = async (req, res) => {
         let result = await Promise.all(muonTraSach.map(async muon => {
             let danhSachSach = await Promise.all(muon.DanhSachMuon.map(async sach => {
                 const ngayMuon = new Date(sach.ngaymuon);
-                const ngayTra = sach.ngaytra ? new Date(sach.ngaytra) : new Date();
-                const soNgayMuon = Math.ceil((ngayTra - ngayMuon) / (1000 * 60 * 60 * 24));
+                const ngayTra = sach.ngaytra ? new Date(sach.ngaytra) : null;
+                let soNgayMuon = null;
+                if (ngayTra){
+                    soNgayMuon = Math.ceil((ngayTra - ngayMuon) / (1000 * 60 * 60 * 24));
+                }
 
                 // Tìm thông tin tiền phạt cho sách này
                 let sachPhat = await TienNo.findOne({ 'ThongTinDocGia': docGia._id, 'SachTra': sach.sachmuon });
@@ -357,7 +360,7 @@ const getListBookBorrowReturnByReaderID = async (req, res) => {
                     MaSach: thongTinSach.MaSach,
                     TenSach: thongTinSach.tensach,
                     NgayMuon: formatDatetoShow(ngayMuon),
-                    NgayTra: formatDatetoShow(ngayTra),
+                    NgayTra: ngayTra ? formatDatetoShow(ngayTra) : null,
                     SoNgayMuon: soNgayMuon,
                     TienPhat: tienPhat
                 };
@@ -366,7 +369,6 @@ const getListBookBorrowReturnByReaderID = async (req, res) => {
             return {
                 MaDocGia: docGia.MaDG,
                 HoTenDocGia: docGia.hoten,
-                // TienPhatKyNay: muon.tienphatkynay || 0,  
                 TongNo: docGia.tongno,
                 DanhSachSach: danhSachSach
             };
