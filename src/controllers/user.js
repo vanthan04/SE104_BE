@@ -6,7 +6,8 @@ const { generateAccessToken, generateRefreshToken } = require("../middlewares/jw
 const User = require("../models/User");
 const crypto = require('crypto');
 const sendmail = require("../helps/sendEmail");
-const jwt = require("jsonwebtoken")
+const jwt = require("jsonwebtoken");
+const { generateRandom } = require("../helps/generateRandom");
 initializePassport(passport);
 
 const register = asyncHandler(async (req, res) => {
@@ -193,6 +194,37 @@ const login = asyncHandler (async (req, res, next) => {
   })(req, res, next);
 });
 
+const forgetPassword = async (req, res) => {
+  const { email } = req.body;
+
+  const user = await User.findOne({ email: email });
+
+  const password = generateRandom.generateRandom(6);
+
+  if (user) {
+
+    sendmail.sendmail(user.email,
+      "Forget your password",
+      `<h2>Hello ${user.fullname}!</h2>
+          <h3>You have just requested a password reset for our website.</h3>
+          <h4>Your new password is: ${password}</h4>`);
+
+    user.password = password;
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Password mới đã được gửi vào email. Vui lòng check email!",
+    });
+  } else {
+    return res.status(200).json({
+      success: false,
+      message: "Email không tồn tại!",
+    });
+  }
+};
+
+
 const getRefreshToken = async (req, res) => {
   try {
     const refreshtoken = req.cookies.refreshToken;
@@ -232,21 +264,23 @@ const getRefreshToken = async (req, res) => {
 }
 
 const resetPassword = async (req, res) => {
-  const { MaDG, password, newpassword } = req.body;
+  const { _id } = req.user;
 
-  if (!MaDG || !password || !newpassword) {
+  const { password, newpassword } = req.body;
+
+  if (!_id || !password || !newpassword) {
     return res.status(400).json({
       success: false,
-      message: "Missing inputs",
+      message: "Thiếu dữ liệu",
     });
   }
 
-  const user = await User.findOne({MaDG: MaDG});
+  const user = await User.findById(_id);
 
   if (user) {
     if (await user.isCorrectPassword(password)) {
       user.password = newpassword;
-      const response = await user.save();
+      await user.save();
       return res.status(200).json({
         success: true,
         message: "Thay đổi mật khẩu thành công!",
@@ -259,11 +293,23 @@ const resetPassword = async (req, res) => {
     }
   }
 };
+const getCurrent = asyncHandler(async (req, res) => {
+  const { _id } = req.user;
+
+  const user = await User.findById(_id).select("-refreshToken -password");
+
+  return res.status(200).json({
+    success: user ? true : false,
+    userData: user ? user : "Tài khoản không tồn tại",
+  });
+});
 
 module.exports = {
   login,
   register,
   verifyEmail,
   getRefreshToken,
-  resetPassword
+  forgetPassword,
+  resetPassword,
+  getCurrent
 };
