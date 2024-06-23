@@ -356,11 +356,27 @@ const findBookByName = async (req, res) => {
         }
         const formattedBook = await Promise.all(allBooks.map( async (book) => {
             const NgayNhaptoShow = formatDatetoShow(book.ngaynhap);
-            // const ngaynhaptoUpdate = formatDatetoUpdate(book.ngaynhap);
+
+            // Tìm bản ghi MuonTraSach có sách này trong mảng DanhSachMuon.sachmuon
+            let borrowerInfo = null;
+            if (book.tinhtrang === 'Đã mượn') {
+                const nguoimuon = await DocGia.findById(book.docgiamuon)
+
+                if (nguoimuon) {
+                        borrowerInfo = {
+                            MaDocGia: nguoimuon.MaDG,
+                            HoTenDocGia: nguoimuon.hoten,
+                            Email: nguoimuon.email,
+                            NgaySinh: formatDatetoShow(nguoimuon.ngaysinh),
+                            LoaiDocGia: nguoimuon.loaidocgia
+                    }
+                }
+            }
+
             return {
-                 ...book.toObject(),
-                ngaynhaptoShow: NgayNhaptoShow, 
-                // ngaynhaptoUpdate: ngaynhaptoUpdate
+                ...book.toObject(),
+                ngaynhaptoShow: NgayNhaptoShow,
+                borrowerInfo: borrowerInfo
             };
 
         }))
@@ -399,15 +415,30 @@ const findBookByBookID = async (req, res) => {
             })
         }
         const NgayNhaptoShow = formatDatetoShow(book.ngaynhap);
-        // const ngaynhaptoUpdate = formatDatetoUpdate(book.ngaynhap);
+        // Tìm bản ghi MuonTraSach có sách này trong mảng DanhSachMuon.sachmuon
+        let borrowerInfo = null;
+        if (book.tinhtrang === 'Đã mượn') {
+            const nguoimuon = await DocGia.findById(book.docgiamuon)
+
+            if (nguoimuon) {
+                    borrowerInfo = {
+                        MaDocGia: nguoimuon.MaDG,
+                        HoTenDocGia: nguoimuon.hoten,
+                        Email: nguoimuon.email,
+                        NgaySinh: formatDatetoShow(nguoimuon.ngaysinh),
+                        LoaiDocGia: nguoimuon.loaidocgia
+                }
+            }
+        }
+
         return res.status(200).json({
             success: true,
             data: {
-                ...book.toObject(), 
-                ngaynhaptoShow: NgayNhaptoShow, 
-                // ngaynhaptoUpdate: ngaynhaptoUpdate
+                ...book.toObject(),
+                ngaynhaptoShow: NgayNhaptoShow,
+                borrowerInfo: borrowerInfo
             }
-        })
+        });
 
     } catch (error) {
         console.log(error.message);
@@ -446,11 +477,27 @@ const findBookByGenre = async (req, res) => {
         const listBooks = await Book.find({theloai: theloai});
         const formattedBook = await Promise.all(listBooks.map(async (book) => {
             const NgayNhaptoShow = formatDatetoShow(book.ngaynhap);
-            // const ngaynhaptoUpdate = formatDatetoUpdate(book.ngaynhap);
-            return { 
-                ...book.toObject(), 
-                ngaynhaptoShow: NgayNhaptoShow, 
-                // ngaynhaptoUpdate: ngaynhaptoUpdate
+
+            // Tìm bản ghi MuonTraSach có sách này trong mảng DanhSachMuon.sachmuon
+            let borrowerInfo = null;
+            if (book.tinhtrang === 'Đã mượn') {
+                const nguoimuon = await DocGia.findById(book.docgiamuon)
+
+                if (nguoimuon) {
+                        borrowerInfo = {
+                            MaDocGia: nguoimuon.MaDG,
+                            HoTenDocGia: nguoimuon.hoten,
+                            Email: nguoimuon.email,
+                            NgaySinh: formatDatetoShow(nguoimuon.ngaysinh),
+                            LoaiDocGia: nguoimuon.loaidocgia
+                    }
+                }
+            }
+
+            return {
+                ...book.toObject(),
+                ngaynhaptoShow: NgayNhaptoShow,
+                borrowerInfo: borrowerInfo
             };
     
         }))
