@@ -205,7 +205,7 @@ const getRefreshToken = async (req, res) => {
     jwt.verify(refreshtoken, process.env.JWT_SECRET,(err,user)=>{
       if(err) return res.status(401).json({
           success: false,
-          message: 'Invalid access token!'
+          message: 'Token không hợp lệ!'
       })
       const accessToken = generateAccessToken(user._id);
       const newRefreshToken = generateRefreshToken(user._id);
@@ -232,18 +232,16 @@ const getRefreshToken = async (req, res) => {
 }
 
 const resetPassword = async (req, res) => {
-  const { _id } = req.user;
+  const { MaDG, password, newpassword } = req.body;
 
-  const { password, newpassword } = req.body;
-
-  if (!_id || !password || !newpassword) {
+  if (!MaDG || !password || !newpassword) {
     return res.status(400).json({
       success: false,
       message: "Missing inputs",
     });
   }
 
-  const user = await User.findById(_id);
+  const user = await User.findOne({MaDG: MaDG});
 
   if (user) {
     if (await user.isCorrectPassword(password)) {

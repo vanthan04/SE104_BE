@@ -2,7 +2,7 @@ const ctrls = require("../controllers/QuanLiSach");
 const { verifyAccessToken } = require("../middlewares/verifyToken");
 const router = require("express").Router();
 
-// router.all('*', verifyAccessToken)
+router.all('*', verifyAccessToken)
 router.post('/createNewBook',  ctrls.createNewBook);
 // router.put('/updateBook', ctrls.updateBook);
 router.post('/deleteBook', ctrls.deleteBook);

@@ -26,11 +26,12 @@ app.use(session({
   secret: 'secret',
   saveUninitialized: true,
   resave: false,
-  maxAge: 1000 * 60 * 15,
-  cookie:{
-      secure: false
+  cookie: {
+    secure: false, // Đặt thành true nếu bạn sử dụng HTTPS
+    maxAge: 1000 * 60 * 15 // Thời gian sống của cookie
   }
-}))
+}));
+
 
 app.use(passport.initialize());
 app.use(passport.session());
