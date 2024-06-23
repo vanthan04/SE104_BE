@@ -1,7 +1,7 @@
 const PhieuThu = require('../models/PhieuThu');
 const DocGia = require('../models/DocGia'); // Import model DocGia để truy xuất thông tin độc giả
 const { formatDatetoShow } = require('../helps/fixDate');
-
+const { calculateDate } = require("../helps/calculateTime")
 
 const PhieuThuTienPhat = async (req, res) => {
     try {
@@ -16,23 +16,23 @@ const PhieuThuTienPhat = async (req, res) => {
         }
 
 
-         // Kiểm tra ngày mượn có hợp lệ hay không
-         if (calculateDate(ngaythu) < 0) {
-             return res.status(400).json({
-                 success: false,
-                 message: "Ngày mượn sách không hợp lệ!" // Sai quy định ngày mượn
-             });
-         }
+        // Kiểm tra ngày mượn có hợp lệ hay không
+        if (calculateDate(ngaythu) < 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Ngày mượn sách không hợp lệ!" // Sai quy định ngày mượn
+            });
+        }
 
         // Kiểm tra xem độc giả có tồn tại không
-        const docGia = await DocGia.findOne({MaDG: MaDG});
+        const docGia = await DocGia.findOne({ MaDG: MaDG });
         if (!docGia) {
             return res.status(404).json({
                 success: false,
                 message: 'Không tìm thấy độc giả!'
             });
         }
-        if (tienthu > docGia.tongno){
+        if (tienthu > docGia.tongno) {
             return res.status(400).json({
                 success: false,
                 message: 'Tiền thu không thể lớn hơn tiền nợ!'
@@ -49,7 +49,7 @@ const PhieuThuTienPhat = async (req, res) => {
 
         // Lưu phiếu thu vào cơ sở dữ liệu
         await phieuThu.save();
-        
+
         // Cập nhật lại tiền nợ của độc giả
         docGia.tongno -= tienthu;
         await docGia.save();
