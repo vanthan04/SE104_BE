@@ -228,6 +228,7 @@ const deleteReader = async (req, res) => {
                 message: 'Không tìm thấy độc giả!'
             })
         }
+        
         const docgiaDaMuonSach = await MuonTraSach.findOne({ThongtinDocGia: docgia._id});
         if (docgiaDaMuonSach){
             return res.status(400).json({
