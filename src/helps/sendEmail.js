@@ -52,3 +52,6 @@ const sendmail = async (receiverEmail, subject, html) => {
 module.exports = {
     sendmail
 };
+
+
+

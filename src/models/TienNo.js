@@ -1,24 +1,28 @@
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
 
 const TienNoSchema = new mongoose.Schema(
     {
-        SachTra:{
+        ThongTinDocGia: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'MuonTraSach'
+            ref: 'DocGia'
         },
-        ngaytra:{
+        SachTra: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Sach'
+        },
+        ngaytra: {
             type: Date
         },
-        ngaytramuon:{
+        ngaytraquydinh: {
             type: Date
         },
-        tienno:{
+        tienno: {
             type: Number
         }
     },
     {
         timestamps: true
     }
-)
+);
 
-module.exports = mongoose.model('TienNo', TienNoSchema)
+module.exports = mongoose.model('TienNo', TienNoSchema);

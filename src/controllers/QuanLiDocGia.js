@@ -1,5 +1,6 @@
 const DocGia = require("../models/DocGia")
 const QuyDinh = require("../models/QuyDinh")
+const MuonTraSach = require("../models/MuonTraSach");
 const { calculateDate } = require("../helps/calculateTime")
 const { formatDatetoShow, formatDatetoUpdate } = require("../helps/fixDate")
 
@@ -228,6 +229,13 @@ const deleteReader = async (req, res) => {
             })
         }
         
+        const docgiaDaMuonSach = await MuonTraSach.findOne({ThongtinDocGia: docgia._id});
+        if (docgiaDaMuonSach){
+            return res.status(400).json({
+                success: false,
+                message: 'Không thể xóa độc giả vì độc giả đang mượn sách!'
+            })
+        }
         await DocGia.findOneAndDelete({ MaDG: MaDG });
 
         return res.status(200).json({
@@ -469,6 +477,31 @@ const findReader = async (req, res) => {
         });
     }
 }
+
+const getListReaders = async (req, res) => {
+    try {
+        const listReader = await DocGia.find({isLocked: false});
+        const formatReader = listReader.map(reader => {
+            return {
+                MaDG: reader.MaDG,
+                HoTen: reader.hoten,
+                NgayLapThe: formatDatetoShow(new Date(reader.ngaylapthe)),
+                TongNo: reader.tongno,
+
+            }
+        })
+        return res.status(200).json({
+            success: true,
+            data: formatReader
+        })
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal Server Error!'
+        })
+    }
+}
 module.exports = {
     createNewReader,
     updateReader,
@@ -477,5 +510,6 @@ module.exports = {
     findReaderByMaDG,
     findReaderByFullname,
     findReaderByEmail,
-    findReader
+    findReader,
+    getListReaders
 }

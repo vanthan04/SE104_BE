@@ -11,5 +11,6 @@ router.get('/findReaderByMaDG', ctrls.findReaderByMaDG)
 router.get('/findReaderByEmail', ctrls.findReaderByEmail)
 router.get('/findReaderByFullname', ctrls.findReaderByFullname)
 router.get('/findReader', ctrls.findReader)
+router.get('/getListReaders', ctrls.getListReaders)
 
 module.exports = router;

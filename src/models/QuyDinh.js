@@ -27,6 +27,9 @@ const QuyDinhSchema = new mongoose.Schema(
         },
         songaymuontoida:{
             type: Number,
+        },
+        tienphatmoingay:{
+            type: Number
         }
     },
     {

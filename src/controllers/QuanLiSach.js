@@ -1,8 +1,10 @@
 const QuyDinh = require("../models/QuyDinh")
 const {calculateDate} = require("../helps/calculateTime")
 const Book = require("../models/Sach")
-const TacGia = require("../models/TacGia")
 const { formatDatetoUpdate, formatDatetoShow } = require("../helps/fixDate")
+const Sach = require("../models/Sach")
+const MuonTraSach = require("../models/MuonTraSach")
+const DocGia = require("../models/DocGia")
 
 const createNewBook = async (req, res) => {
     const {tensach, theloai, tacgia, namxuatban, nhaxuatban, ngaynhap, trigia} = req.body;
@@ -31,7 +33,7 @@ const createNewBook = async (req, res) => {
         }
 
         //Kiểm tra xem số lượng tác giả có thỏa mãn hay không
-        const soluongtacgia = await new TacGia().KiemTraSoLuongTacGia();
+        const soluongtacgia = await Sach.countDistinctTacGia();
         if (soluongtacgia === -1 || soluongtacgia > 100){
             return res.status(400).json({
                 success: false,
@@ -46,20 +48,7 @@ const createNewBook = async (req, res) => {
             highestMaSach = parseInt(highestMaSachDoc.MaSach.substr(2)); 
         }
         const newBookID = 'MS' + String(highestMaSach + 1).padStart(5, '0'); 
-
-        const parsedDStacgia = JSON.parse(tacgia);
-        const listTL = parsedDStacgia.map(author => author.trim());
             
-
-
-        // Kiểm tra và thêm tác  giả nếu chưa tồn tại
-        const tacgiaIds = await Promise.all(listTL.map(async (tentacgia) => {
-            let author = await TacGia.findOne({ tentacgia });
-            if (!author) {
-                author = await TacGia.create({ tentacgia });
-            }
-            return author._id;
-        }));
 
         // Lấy quy định
         const rule = await QuyDinh.findOne({});
@@ -73,7 +62,7 @@ const createNewBook = async (req, res) => {
                 MaSach: newBookID,
                 tensach: tensach,
                 theloai: theloai,
-                tacgia: tacgiaIds,
+                tacgia: tacgia,
                 namxuatban: namxuatban,
                 nhaxuatban: nhaxuatban,
                 ngaynhap: new Date(ngaynhap),
@@ -104,24 +93,24 @@ const createNewBook = async (req, res) => {
             await newBook.save();
 
             const NgayNhaptoShow = formatDatetoShow(newBook.ngaynhap);
-            const NgayNhaptoUpdate = formatDatetoUpdate(newBook.ngaynhap)
+            // const NgayNhaptoUpdate = formatDatetoUpdate(newBook.ngaynhap)
             return res.status(200).json({
                 success: true,
                 message: "Thêm sách mới thành công!",
                 data: {
                     ...newBook.toObject(),
                     ngaynhaptoShow: NgayNhaptoShow,
-                    ngaynhaptoUpdate: NgayNhaptoUpdate
+                    // ngaynhaptoUpdate: NgayNhaptoUpdate
 
                 }
             });
-        } // Ngược lại
+        } // Ngược lại không có quy định
         else {
             const newBook = await Book.create({
                 MaSach: newBookID,
                 tensach: tensach,
                 theloai: theloai,
-                tacgia: tacgiaIds,
+                tacgia: tacgia,
                 namxuatban: namxuatban,
                 nhaxuatban: nhaxuatban,
                 ngaynhap: new Date(ngaynhap),
@@ -129,14 +118,14 @@ const createNewBook = async (req, res) => {
             })
 
             const NgayNhaptoShow = formatDatetoShow(newBook.ngaynhap);
-            const NgayNhaptoUpdate = formatDatetoUpdate(newBook.ngaynhap)
+            // const NgayNhaptoUpdate = formatDatetoUpdate(newBook.ngaynhap)
             return res.status(200).json({
                 success: true,
                 message: "Thêm sách mới thành công!",
                 data: {
                     ...newBook.toObject(),
                     ngaynhaptoShow: NgayNhaptoShow,
-                    ngaynhaptoUpdate: NgayNhaptoUpdate
+                    // ngaynhaptoUpdate: NgayNhaptoUpdate
 
                 }
             });
@@ -150,108 +139,111 @@ const createNewBook = async (req, res) => {
     }
 }
 
-const updateBook = async (req, res) => {
-    try {
-        const {MaSach, tensach, theloai, tacgia, namxuatban, nhaxuatban, ngaynhap, gia} = req.body;
+// const updateBook = async (req, res) => {
+//     try {
+//         const {MaSach, tensach, theloai, tacgia, namxuatban, nhaxuatban, ngaynhap, gia} = req.body;
 
-        const book = await Book.findOne({MaSach: MaSach});
-        if(!book){
-            return res.status(400).json({
-                success: false,
-                message: `Không tìm thấy sách cần cập nhật!`
-            })
-        }
+//         const book = await Book.findOne({MaSach: MaSach});
+//         if(!book){
+//             return res.status(400).json({
+//                 success: false,
+//                 message: `Không tìm thấy sách cần cập nhật!`
+//             })
+//         }
 
-        const parsedDStacgia = JSON.parse(tacgia);
-        const listTacGia = parsedDStacgia.map(author => author.trim());
+//         const parsedDStacgia = JSON.parse(tacgia);
+//         const listTacGia = parsedDStacgia.map(author => author.trim());
 
-        const sortedlistTacGia = listTacGia.sort((a, b) => a.localeCompare(b));
-
-
-        const listdbTacGia = await book.getListTacGia();
-
-        const sortedlistdbTacGia = listdbTacGia.sort((a, b) => a.localeCompare(b));
+//         const sortedlistTacGia = listTacGia.sort((a, b) => a.localeCompare(b));
 
 
-        const matched = JSON.stringify(sortedlistdbTacGia) === JSON.stringify(sortedlistTacGia);
+//         const listdbTacGia = await book.getListTacGia();
 
-        if (tensach === book.tensach && theloai === book.theloai && matched && parseInt(namxuatban) === book.namxuatban && nhaxuatban === book.nhaxuatban && (new Date(ngaynhap)).getTime() === book.ngaynhap.getTime() && parseInt(gia) === book.gia){
-            return res.status(400).json({
-                success: false,
-                message: 'Không có sự thay đổi!'
-            })
-        }
+//         const sortedlistdbTacGia = listdbTacGia.sort((a, b) => a.localeCompare(b));
 
-        const rule = await QuyDinh.findOne({});
-        if (rule){
-            if (calculateDate(ngaynhap) < 0){
-                return res.status(400).json({
-                    success: false,
-                    message: "Ngày nhập sách không hợp lệ!"
-                });
-            }
-            const listTheLoai = rule.DStheloai;
-            const transformedList = listTheLoai.map(item => item.tentheloai);
 
-            if (!transformedList.includes(theloai)){
-                return res.status(400).json({
-                    success: false,
-                    message: "Thể loại không nằm trong danh sách thể loại!"
-                });
-            }
+//         const matched = JSON.stringify(sortedlistdbTacGia) === JSON.stringify(sortedlistTacGia);
 
-        }
+//         if (tensach === book.tensach && theloai === book.theloai && matched && parseInt(namxuatban) === book.namxuatban && nhaxuatban === book.nhaxuatban && (new Date(ngaynhap)).getTime() === book.ngaynhap.getTime() && parseInt(gia) === book.gia){
+//             return res.status(400).json({
+//                 success: false,
+//                 message: 'Không có sự thay đổi!'
+//             })
+//         }
 
-        // Kiểm tra và thêm tác  giả nếu chưa tồn tại
-        const tacgiaIds = await Promise.all(listTacGia.map(async (tentacgia) => {
-            // listdbTacGia.map((tentacgia1) => {
-            //     if (tentacgia === tentacgia1) return;
-            // })
-            let author = await TacGia.findOne({ tentacgia });
-            if (!author) {
-                author = await TacGia.create({ tentacgia });
-            }
-            return author._id;
-        }));
+//         const rule = await QuyDinh.findOne({});
+//         if (rule){
+//             if (calculateDate(ngaynhap) < 0){
+//                 return res.status(400).json({
+//                     success: false,
+//                     message: "Ngày nhập sách không hợp lệ!"
+//                 });
+//             }
+//             const listTheLoai = rule.DStheloai;
+//             const transformedList = listTheLoai.map(item => item.tentheloai);
 
-        const updatebook = await Book.findOneAndUpdate(
-            {MaSach: MaSach},
-            {
-                tensach: tensach,
-                theloai: theloai,
-                tacgia: tacgiaIds,
-                namxuatban: namxuatban,
-                nhaxuatban: nhaxuatban,
-                ngaynhap: new Date(ngaynhap),
-                gia: gia
-            },
-            {new: true}
-        )
+//             if (!transformedList.includes(theloai)){
+//                 return res.status(400).json({
+//                     success: false,
+//                     message: "Thể loại không nằm trong danh sách thể loại!"
+//                 });
+//             }
+
+//         }
+
+//         // Kiểm tra và thêm tác  giả nếu chưa tồn tại
+//         const tacgiaIds = await Promise.all(listTacGia.map(async (tentacgia) => {
+//             // listdbTacGia.map((tentacgia1) => {
+//             //     if (tentacgia === tentacgia1) return;
+//             // })
+//             let author = await TacGia.findOne({ tentacgia });
+//             if (!author) {
+//                 author = await TacGia.create({ tentacgia });
+//             }
+//             return author._id;
+//         }));
+
+//         const updatebook = await Book.findOneAndUpdate(
+//             {MaSach: MaSach},
+//             {
+//                 tensach: tensach,
+//                 theloai: theloai,
+//                 tacgia: tacgiaIds,
+//                 namxuatban: namxuatban,
+//                 nhaxuatban: nhaxuatban,
+//                 ngaynhap: new Date(ngaynhap),
+//                 gia: gia
+//             },
+//             {new: true}
+//         )
 
         
 
 
-        const NgayNhaptoShow = formatDatetoShow(updatebook.ngaynhap);
-        const NgayNhaptoUpdate = formatDatetoUpdate(updatebook.ngaynhap)
-        // Trả về một đối tượng mới với ngày sinh đã được định dạng
+//         const NgayNhaptoShow = formatDatetoShow(updatebook.ngaynhap);
+//         const NgayNhaptoUpdate = formatDatetoUpdate(updatebook.ngaynhap)
+//         // Trả về một đối tượng mới với ngày sinh đã được định dạng
 
-        return res.status(200).json({
-            success: true,
-            message: 'Cập nhật độc giả thành công!',
-            data: {
-                ...updatebook.toObject(),
-                ngaynhaptoShow: NgayNhaptoShow,
-                ngaynhaptoUpdate: NgayNhaptoUpdate
-            }
-        })
-    } catch (error) {
-        console.log(error.message)
-        res.status(500).json({
-            success: false,
-            message: 'Internal Server Error!'
-        });
-    }
-}
+//         return res.status(200).json({
+//             success: true,
+//             message: 'Cập nhật độc giả thành công!',
+//             data: {
+//                 ...updatebook.toObject(),
+//                 ngaynhaptoShow: NgayNhaptoShow,
+//                 ngaynhaptoUpdate: NgayNhaptoUpdate
+//             }
+//         })
+//     } catch (error) {
+//         console.log(error.message)
+//         res.status(500).json({
+//             success: false,
+//             message: 'Internal Server Error!'
+//         });
+//     }
+// }
+
+
+
 
 const deleteBook = async (req, res) => {
     try {
@@ -270,6 +262,12 @@ const deleteBook = async (req, res) => {
                 message: `Không tìm thấy sách trong danh sách!`
             })
         } 
+        if (sach.tinhtrang === "Đã mượn"){
+            return res.status(400).json({
+                success: false,
+                message: "Không thể xóa sách này vì đang có người mượn!"
+            })
+        }
         await Book.findOneAndDelete({MaSach: MaSach}) ;
 
         return res.status(200).json({
@@ -288,37 +286,54 @@ const deleteBook = async (req, res) => {
 const getAllBooks = async (req, res) => {
     try {
         const allBooks = await Book.find({});
-        if (!allBooks){
+        if (!allBooks || allBooks.length === 0) {
             return res.status(400).json({
                 success: false,
                 message: 'Không có sách nào!',
                 data: []
-            })
-        } else {
-            const formattedBooks = await Promise.all(allBooks.map(async (book) => {
-                const listtacgia = await book.getListTacGia();
-                const NgayNhaptoShow = formatDatetoShow(book.ngaynhap);
-                const ngaynhaptoUpdate = formatDatetoUpdate(book.ngaynhap);
-                return {
-                    ...book.toObject(),
-                    listtacgia: listtacgia,
-                    ngaynhaptoShow: NgayNhaptoShow,
-                    ngaynhaptoUpdate: ngaynhaptoUpdate
-                };
-            }));
-            return res.status(200).json({
-                success: true,
-                data: formattedBooks
-            })
+            });
         }
+
+        const formattedBooks = await Promise.all(allBooks.map(async (book) => {
+            const NgayNhaptoShow = formatDatetoShow(book.ngaynhap);
+
+            // Tìm bản ghi MuonTraSach có sách này trong mảng DanhSachMuon.sachmuon
+            let borrowerInfo = null;
+            if (book.tinhtrang === 'Đã mượn') {
+                const nguoimuon = await DocGia.findById(book.docgiamuon)
+
+                if (nguoimuon) {
+                        borrowerInfo = {
+                            MaDocGia: nguoimuon.MaDG,
+                            HoTenDocGia: nguoimuon.hoten,
+                            Email: nguoimuon.email,
+                            NgaySinh: formatDatetoShow(nguoimuon.ngaysinh),
+                            LoaiDocGia: nguoimuon.loaidocgia
+                    }
+                }
+            }
+
+            return {
+                ...book.toObject(),
+                ngaynhaptoShow: NgayNhaptoShow,
+                borrowerInfo: borrowerInfo
+            };
+        }));
+
+        return res.status(200).json({
+            success: true,
+            data: formattedBooks
+        });
     } catch (error) {
         console.log(error.message);
         return res.status(500).json({
             success: false,
             message: 'Internal Server Error!'
-        })
+        });
     }
-}
+};
+
+
 
 const findBookByName = async (req, res) => {
     try {
@@ -341,13 +356,11 @@ const findBookByName = async (req, res) => {
         }
         const formattedBook = await Promise.all(allBooks.map( async (book) => {
             const NgayNhaptoShow = formatDatetoShow(book.ngaynhap);
-            const ngaynhaptoUpdate = formatDatetoUpdate(book.ngaynhap);
-            const listtg = await book.getListTacGia();
+            // const ngaynhaptoUpdate = formatDatetoUpdate(book.ngaynhap);
             return {
                  ...book.toObject(),
-                listTacGia: listtg, 
                 ngaynhaptoShow: NgayNhaptoShow, 
-                ngaynhaptoUpdate: ngaynhaptoUpdate
+                // ngaynhaptoUpdate: ngaynhaptoUpdate
             };
 
         }))
@@ -386,15 +399,13 @@ const findBookByBookID = async (req, res) => {
             })
         }
         const NgayNhaptoShow = formatDatetoShow(book.ngaynhap);
-        const ngaynhaptoUpdate = formatDatetoUpdate(book.ngaynhap);
-        const listtg = await book.getListTacGia(); 
+        // const ngaynhaptoUpdate = formatDatetoUpdate(book.ngaynhap);
         return res.status(200).json({
             success: true,
             data: {
                 ...book.toObject(), 
-                listTacGia: listtg,
                 ngaynhaptoShow: NgayNhaptoShow, 
-                ngaynhaptoUpdate: ngaynhaptoUpdate
+                // ngaynhaptoUpdate: ngaynhaptoUpdate
             }
         })
 
@@ -435,13 +446,11 @@ const findBookByGenre = async (req, res) => {
         const listBooks = await Book.find({theloai: theloai});
         const formattedBook = await Promise.all(listBooks.map(async (book) => {
             const NgayNhaptoShow = formatDatetoShow(book.ngaynhap);
-            const ngaynhaptoUpdate = formatDatetoUpdate(book.ngaynhap);
-            const listtg = await book.getListTacGia();
+            // const ngaynhaptoUpdate = formatDatetoUpdate(book.ngaynhap);
             return { 
                 ...book.toObject(), 
-                listTacGia: listtg,
                 ngaynhaptoShow: NgayNhaptoShow, 
-                ngaynhaptoUpdate: ngaynhaptoUpdate
+                // ngaynhaptoUpdate: ngaynhaptoUpdate
             };
     
         }))
@@ -460,7 +469,7 @@ const findBookByGenre = async (req, res) => {
 
 module.exports = {
     createNewBook,
-    updateBook,
+    // updateBook,
     deleteBook,
     getAllBooks,
     findBookByName,
