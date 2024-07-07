@@ -16,7 +16,7 @@ const MuonTraSachSchema = new mongoose.Schema(
                 },
                 ngaytra:{
                     type: Date
-                }
+                },
             },
             {
                 timestamps: true

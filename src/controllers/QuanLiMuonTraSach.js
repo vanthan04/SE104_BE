@@ -154,8 +154,6 @@ const MuonSach = async (req, res) => {
 
 
 
-
-
 const TraSach = async (req, res) => {
     try {
         const { hoten, NgayTraThucTe, danhSachSach } = req.body;
@@ -205,7 +203,9 @@ const TraSach = async (req, res) => {
                 }
 
                 let sachMuon = muonTraSach.DanhSachMuon.find(item => {
-                    return item.sachmuon._id.toString() === sachTimDuoc._id.toString() && !item.ngaytra;
+                    return item.sachmuon._id.toString() === sachTimDuoc._id.toString() &&
+                    //  item.sachmuon. === sachTimDuoc. &&
+                     !item.ngaytra;
                 });
                 if (!sachMuon) {
                     ketQuaTraSach.push({
@@ -342,7 +342,6 @@ const getListBookBorrowReturnByReaderID = async (req, res) => {
 
         // Lấy danh sách sách mượn và trả của độc giả
         let muonTraSach = await MuonTraSach.find({ ThongtinDocGia: docGia._id }).populate('DanhSachMuon.sachmuon');
-
         // Xử lý dữ liệu để trả về kết quả
         let result = await Promise.all(muonTraSach.map(async muon => {
             let danhSachSach = await Promise.all(muon.DanhSachMuon.map(async sach => {
@@ -366,7 +365,7 @@ const getListBookBorrowReturnByReaderID = async (req, res) => {
                     NgayMuon: formatDatetoShow(ngayMuon),
                     NgayTra: ngayTra ? formatDatetoShow(ngayTra) : null,
                     SoNgayMuon: soNgayMuon,
-                    TienPhat: tienPhat
+                    TienPhat: tienPhat,
                 };
             }));
 

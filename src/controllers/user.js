@@ -8,6 +8,7 @@ const crypto = require('crypto');
 const sendmail = require("../helps/sendEmail");
 const jwt = require("jsonwebtoken");
 const { generateRandom } = require("../helps/generateRandom");
+
 initializePassport(passport);
 
 const register = asyncHandler(async (req, res) => {
@@ -199,7 +200,7 @@ const forgetPassword = async (req, res) => {
 
   const user = await User.findOne({ email: email });
 
-  const password = generateRandom.generateRandom(6);
+  const password = generateRandom(6);
 
   if (user) {
 

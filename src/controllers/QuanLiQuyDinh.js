@@ -198,8 +198,8 @@ const updateGenre = async (req, res) => {
         const matched = JSON.stringify(sorteddbDStheloai) === JSON.stringify(sortedDStheloai);
 
         if (matched) {
-            return res.status(200).json({
-                success: true,
+            return res.status(400).json({
+                success: false,
                 message: "Danh sách thể loại giống nhau!"
             });
         }

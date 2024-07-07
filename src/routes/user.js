@@ -4,7 +4,7 @@ const { verifyAccessToken } = require("../middlewares/verifyToken");
 
 router.get("/verify-email", ctrls.verifyEmail);
 router.get("/current", [verifyAccessToken], ctrls.getCurrent);
-router.post("/forget-password", ctrls.forgetPassword);
+router.post("/forget-password", ctrls.forgetPassword);  
 router.post('/login', ctrls.login);
 router.post('/register', ctrls.register);
 router.get('/get-refresh-token', [verifyAccessToken], ctrls.getRefreshToken);
